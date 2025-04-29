@@ -1,4 +1,4 @@
-package com.example.climbing_app.ui
+package com.example.climbing_app.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -44,6 +43,9 @@ import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
 import com.example.climbing_app.R
 import com.example.climbing_app.data.ClimbData
+import com.example.climbing_app.ui.ClimbViewModel
+import com.example.climbing_app.ui.components.CompletedStatusLabel
+import com.example.climbing_app.ui.components.RatingStars
 import kotlinx.coroutines.launch
 
 
@@ -117,7 +119,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 }
 
 @Composable
-fun ClimbListColumn(climbList: List<ClimbData>, navController: NavController, modifier: Modifier = Modifier) {
+fun ClimbListColumn(climbList: List<ClimbData>, navController: NavController, modifier: Modifier) {
     LazyColumn(
         modifier = modifier
     ) {
@@ -153,27 +155,23 @@ fun ClimbListItem(navController: NavController, index: Int, data: ClimbData) {
                 Row(
                     verticalAlignment = Alignment.Top
                 ) {
-                    Text(text = data.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(text = data.grade, modifier = Modifier.padding(start = 10.dp))
-                    RatingStars(modifier = Modifier.padding(start = 10.dp, top = 3.dp), rating = data.rating)
+                    Text(
+                        text = data.name,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = data.grade,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                    RatingStars(
+                        rating = data.rating,
+                        modifier = Modifier.padding(start = 10.dp, top = 3.dp)
+                    )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun RatingStars(modifier: Modifier = Modifier, rating : Int) {
-    Row(
-        modifier = modifier
-    ) {
-        for (i in 1..3) {
-            if (i <= rating) {
-                Icon(
-                    modifier = Modifier.size(18.dp),
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = null
-                )
+                Row {
+                    CompletedStatusLabel()
+                }
             }
         }
     }

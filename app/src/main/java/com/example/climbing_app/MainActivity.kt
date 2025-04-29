@@ -15,9 +15,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.climbing_app.ui.ClimbDetailsScreen
+import com.example.climbing_app.ui.screens.ClimbDetailsScreen
 import com.example.climbing_app.ui.ClimbViewModel
-import com.example.climbing_app.ui.YourClimbsScreen
+import com.example.climbing_app.ui.screens.YourClimbsScreen
 import com.example.climbing_app.ui.theme.ClimbingappTheme
 
 
@@ -34,16 +34,22 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // ViewModel
                     val climbViewModel = ClimbViewModel()
 
+                    // Navigation framework
                     val navController: NavHostController = rememberNavController()
                     NavHost(
                         navController = navController,
                         startDestination = AppScreens.Climbs.name
                     ) {
-                        composable(route = AppScreens.Climbs.name) {
+                        // Your climbs
+                        composable(
+                            route = AppScreens.Climbs.name
+                        ) {
                             YourClimbsScreen(climbViewModel, navController)
                         }
+                        // Climb details
                         composable(
                             route = AppScreens.Detail.name+"/{index}",
                             arguments = listOf(
