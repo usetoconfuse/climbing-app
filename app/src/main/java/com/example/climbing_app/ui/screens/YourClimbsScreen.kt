@@ -3,6 +3,7 @@ package com.example.climbing_app.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -43,9 +44,11 @@ import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
 import com.example.climbing_app.R
 import com.example.climbing_app.data.ClimbData
+import com.example.climbing_app.data.ClimbTag
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.CompletedStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
+import com.example.climbing_app.ui.components.TagListRow
 import kotlinx.coroutines.launch
 
 
@@ -82,28 +85,36 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
             )
         },
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
+            SnackbarHost(snackbarHostState)
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text("UPLOAD") },
                 icon = { Icon(Icons.Filled.Add, null) },
                 onClick = {
+
+                    // Upload a new climb
+                    // TODO go to upload screen/popup
                     val pos = climbList.size + 1
                     val newClimb = ClimbData(
                         name = "Climb $pos",
-                        grade = "V3",
                         imageResourceId = R.drawable.climb_img_1,
+                        grade = "V3",
                         rating = pos % 4,
-                        description = "Description"
+                        description = "Lorem ipsum et cetera",
+                        tags = listOf(
+                            ClimbTag.Powerful,
+                            ClimbTag.Jugs,
+                            ClimbTag.Overhang
+                        )
                     )
 
                     climbViewModel.addClimb(newClimb)
 
                     scope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "Uploaded!!!!",
-                            actionLabel = "DISMISS"
+                            message = "'${newClimb.name}' uploaded successfully",
+                            withDismissAction = true
                         )
                     }
                 }
@@ -147,7 +158,7 @@ fun ClimbListItem(navController: NavController, index: Int, data: ClimbData) {
                 painter = painterResource(data.imageResourceId),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(120.dp)
             )
             Column(
                 Modifier.padding(start = 10.dp)
@@ -169,7 +180,28 @@ fun ClimbListItem(navController: NavController, index: Int, data: ClimbData) {
                         modifier = Modifier.padding(start = 10.dp, top = 3.dp)
                     )
                 }
-                Row {
+                // TODO remove/keep this
+                /* Scrapped description preview
+                var previewDesc = data.description
+                if (previewDesc.length > 10) {
+                    previewDesc = "${previewDesc.substring(0, 15)}..."
+                }
+                Text(
+                    text = previewDesc,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.Light,
+                    modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
+                ) */
+                Row(
+                    modifier = Modifier.padding(top = 5.dp)
+                ) {
+                    TagListRow(tags = data.tags)
+                }
+                Row(
+                    modifier = Modifier
+                        .padding(top = 15.dp)
+                        .align(Alignment.End)
+                ) {
                     CompletedStatusLabel()
                 }
             }
