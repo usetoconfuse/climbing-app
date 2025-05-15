@@ -1,10 +1,17 @@
 package com.example.climbing_app.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -121,7 +129,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
             )
         }
     ) { innerPadding ->
-        ClimbListColumn(
+        YourClimbsList(
             climbList = climbList,
             navController = navController,
             modifier = Modifier.padding(innerPadding)
@@ -130,29 +138,28 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 }
 
 @Composable
-fun ClimbListColumn(climbList: List<ClimbData>, navController: NavController, modifier: Modifier) {
+fun YourClimbsList(climbList: List<ClimbData>, navController: NavController, modifier: Modifier) {
     LazyColumn(
         modifier = modifier
     ) {
         itemsIndexed(climbList) { index, item ->
-            ClimbListItem(navController = navController, index = index, data = item)
+            YourClimbsListItem(navController = navController, index = index, data = item)
             HorizontalDivider(thickness = 2.dp)
         }
     }
 }
 
 @Composable
-fun ClimbListItem(navController: NavController, index: Int, data: ClimbData) {
+fun YourClimbsListItem(navController: NavController, index: Int, data: ClimbData) {
     Card(
         onClick = { navController.navigate(route = AppScreens.Detail.name+"/$index") },
         shape = RectangleShape,
-        modifier = Modifier.fillMaxSize(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background
         )
     ) {
         Row(
-            modifier = Modifier.padding(10.dp)
+            Modifier.padding(10.dp)
         ) {
             Image(
                 painter = painterResource(data.imageResourceId),
@@ -161,7 +168,9 @@ fun ClimbListItem(navController: NavController, index: Int, data: ClimbData) {
                 modifier = Modifier.size(120.dp)
             )
             Column(
-                Modifier.padding(start = 10.dp)
+                Modifier
+                    .padding(start = 10.dp)
+                    .fillMaxWidth()
             ) {
                 Row(
                     verticalAlignment = Alignment.Top
@@ -193,16 +202,17 @@ fun ClimbListItem(navController: NavController, index: Int, data: ClimbData) {
                     modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
                 ) */
                 Row(
-                    modifier = Modifier.padding(top = 5.dp)
+                    Modifier.padding(top = 5.dp)
                 ) {
                     TagListRow(tags = data.tags)
                 }
+                Spacer(
+                    modifier = Modifier.weight(1.0f)
+                )
                 Row(
-                    modifier = Modifier
-                        .padding(top = 15.dp)
-                        .align(Alignment.End)
+                    Modifier.align(Alignment.End)
                 ) {
-                    CompletedStatusLabel()
+                    CompletedStatusLabel() // TODO Fix alignment
                 }
             }
         }
