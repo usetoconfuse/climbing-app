@@ -1,6 +1,5 @@
 package com.example.climbing_app.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -19,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,16 +48,14 @@ fun TagLabel(tag: ClimbTag) {
                 .padding(start = 4.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
+            Icon(
                 painter = painterResource(tag.type.imageResourceId),
                 contentDescription = null,
-                contentScale = ContentScale.FillHeight,
                 modifier = Modifier.size(18.dp)
             )
             Text(
                 text = tag.name,
                 fontSize = 10.sp,
-                color = Color.White,
                 modifier = Modifier.padding(start = 5.dp)
             )
         }
