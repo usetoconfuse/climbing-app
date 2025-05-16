@@ -23,11 +23,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.climbing_app.data.ClimbTag
+import com.example.climbing_app.data.ClimbTagHolds
+import com.example.climbing_app.data.ClimbTagIncline
+import com.example.climbing_app.data.ClimbTagStyle
 
 @Composable
-fun TagListRow(tags: List<ClimbTag>) {
+fun TagListRow(style: ClimbTagStyle, holds: ClimbTagHolds, incline: ClimbTagIncline) {
     LazyRow{
-        itemsIndexed(tags) {_, item ->
+        itemsIndexed(listOf(style, holds, incline)) {_, item ->
             TagLabel(item)
         }
     }

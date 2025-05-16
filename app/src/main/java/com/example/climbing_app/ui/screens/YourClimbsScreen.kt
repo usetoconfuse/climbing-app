@@ -28,8 +28,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -43,8 +43,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
 import com.example.climbing_app.R
-import com.example.climbing_app.data.ClimbData
-import com.example.climbing_app.data.ClimbTag
+import com.example.climbing_app.data.Climb
+import com.example.climbing_app.data.ClimbTagHolds
+import com.example.climbing_app.data.ClimbTagIncline
+import com.example.climbing_app.data.ClimbTagStyle
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.CompletedStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
@@ -57,7 +59,7 @@ import kotlinx.coroutines.launch
 fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
 
     // Observe UI state from the ViewModel
-    val climbList by climbViewModel.climbList.collectAsState(emptyList())
+    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
 
     // Snackbar objects
     val scope = rememberCoroutineScope()
@@ -96,20 +98,18 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
                     // Upload a new climb
                     // TODO go to upload screen/popup
                     val pos = climbList.size + 1
-                    val newClimb = ClimbData(
+                    val newClimb = Climb(
                         name = "Climb $pos",
                         imageResourceId = R.drawable.climb_img_1,
                         grade = "V3",
                         rating = pos % 4,
                         description = "Lorem ipsum et cetera",
-                        tags = listOf(
-                            ClimbTag.Powerful,
-                            ClimbTag.Jugs,
-                            ClimbTag.Overhang
-                        )
+                        style = ClimbTagStyle.Powerful,
+                        holds = ClimbTagHolds.Jugs,
+                        incline = ClimbTagIncline.Overhang
                     )
 
-                    climbViewModel.addClimb(newClimb)
+                    climbViewModel.insert(newClimb)
 
                     scope.launch {
                         snackbarHostState.showSnackbar(
@@ -130,7 +130,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 }
 
 @Composable
-fun YourClimbsList(climbList: List<ClimbData>, navController: NavController, modifier: Modifier) {
+fun YourClimbsList(climbList: List<Climb>, navController: NavController, modifier: Modifier) {
     LazyColumn(
         modifier = modifier
     ) {
@@ -142,7 +142,7 @@ fun YourClimbsList(climbList: List<ClimbData>, navController: NavController, mod
 }
 
 @Composable
-fun YourClimbsListItem(navController: NavController, index: Int, data: ClimbData) {
+fun YourClimbsListItem(navController: NavController, index: Int, data: Climb) {
     Card(
         onClick = { navController.navigate(route = AppScreens.Detail.name+"/$index") },
         shape = RectangleShape,
@@ -196,7 +196,11 @@ fun YourClimbsListItem(navController: NavController, index: Int, data: ClimbData
                 Row(
                     Modifier.padding(top = 5.dp)
                 ) {
-                    TagListRow(tags = data.tags)
+                    TagListRow(
+                        style = data.style,
+                        holds = data.holds,
+                        incline = data.incline
+                    )
                 }
                 Spacer(
                     modifier = Modifier.weight(1.0f)

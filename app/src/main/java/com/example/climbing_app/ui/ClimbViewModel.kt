@@ -1,16 +1,26 @@
 package com.example.climbing_app.ui
 
-import androidx.lifecycle.ViewModel
-import com.example.climbing_app.data.ClimbData
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
+import com.example.climbing_app.data.Climb
+import com.example.climbing_app.data.ClimbDatabase
+import com.example.climbing_app.data.ClimbRepository
+import kotlinx.coroutines.launch
 
-class ClimbViewModel : ViewModel() {
-    private val _climbList = MutableStateFlow<List<ClimbData>>(emptyList())
-    val climbList = _climbList.asStateFlow()
-
-    fun addClimb(climb : ClimbData) {
-        // TODO implement this
-        _climbList.value += climb
+class ClimbViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: ClimbRepository
+    val allClimbs: LiveData<List<Climb>>
+    init {
+        val climbDao = ClimbDatabase.getDatabase(application).climbDao()
+        repository = ClimbRepository(climbDao)
+        allClimbs = repository.allClimbs
+    }
+    fun insert(climb: Climb) = viewModelScope.launch {
+        repository.insert(climb)
+    }
+    fun delete(climb: Climb) = viewModelScope.launch {
+        repository.delete(climb)
     }
 }

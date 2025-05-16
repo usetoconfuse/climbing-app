@@ -15,11 +15,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.climbing_app.ui.screens.ClimbDetailsScreen
 import com.example.climbing_app.ui.ClimbViewModel
+import com.example.climbing_app.ui.screens.ClimbDetailsScreen
 import com.example.climbing_app.ui.screens.YourClimbsScreen
 import com.example.climbing_app.ui.theme.ClimbingappTheme
-
 
 
 class MainActivity : ComponentActivity() {
@@ -35,7 +34,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     // ViewModel
-                    val climbViewModel = ClimbViewModel()
+                    val climbViewModel = ClimbViewModel(application)
 
                     // Navigation framework
                     val navController: NavHostController = rememberNavController()
