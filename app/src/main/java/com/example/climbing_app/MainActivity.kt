@@ -50,17 +50,17 @@ class MainActivity : ComponentActivity() {
                         }
                         // Climb details
                         composable(
-                            route = AppScreens.Detail.name+"/{index}",
+                            route = AppScreens.Detail.name+"/{id}",
                             arguments = listOf(
-                                navArgument(name = "index") {
+                                navArgument(name = "id") {
                                     type = NavType.IntType
                                 }
                             )
                         ) {
-                            index ->
+                            id ->
                             ClimbDetailsScreen(
                                 climbViewModel,
-                                index = index.arguments?.getInt("index")
+                                id = id.arguments?.getInt("id")
                             )
                         }
                     }

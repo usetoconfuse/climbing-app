@@ -20,7 +20,13 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     fun insert(climb: Climb) = viewModelScope.launch {
         repository.insert(climb)
     }
+    fun update(climb: Climb) = viewModelScope.launch {
+        repository.insert(climb)
+    }
     fun delete(climb: Climb) = viewModelScope.launch {
         repository.delete(climb)
+    }
+    fun getItem(id: Int) = viewModelScope.launch {
+        repository.getClimbItem(id)
     }
 }

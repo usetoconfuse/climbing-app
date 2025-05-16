@@ -1,12 +1,11 @@
 package com.example.climbing_app.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -29,39 +28,36 @@ import com.example.climbing_app.data.ClimbTagStyle
 
 @Composable
 fun TagListRow(style: ClimbTagStyle, holds: ClimbTagHolds, incline: ClimbTagIncline) {
-    LazyRow{
-        itemsIndexed(listOf(style, holds, incline)) {_, item ->
-            TagLabel(item)
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        for (i in listOf(style, holds, incline)) {
+            Box(
+                Modifier.weight(1.0f)
+            ) {
+                TagLabel(i)
+            }
         }
     }
 }
 
 @Composable
 fun TagLabel(tag: ClimbTag) {
-    Surface(
+    Row (
         modifier = Modifier
-            .height(24.dp)
-            .padding(end = 3.dp),
-        color = tag.type.labelColor,
-        shape = RoundedCornerShape(6.dp)
+            .height(24.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row (
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 4.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(tag.type.imageResourceId),
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Text(
-                text = tag.name,
-                fontSize = 10.sp,
-                modifier = Modifier.padding(start = 5.dp)
-            )
-        }
+        Icon(
+            painter = painterResource(tag.type.imageResourceId),
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = tag.name,
+            fontSize = 10.sp,
+            modifier = Modifier.padding(start = 5.dp)
+        )
     }
 }
 
@@ -83,6 +79,27 @@ fun RatingStars(rating: Int, modifier: Modifier) {
 }
 
 @Composable
+fun CompletedStatusIcon() {
+    Surface(
+        color = Color(0xFF78A55A),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.CheckCircle,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun CompletedStatusLabel() {
     Surface(
         color = Color(0xFF78A55A),
@@ -91,7 +108,7 @@ fun CompletedStatusLabel() {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(8.dp)
+                .padding(4.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.CheckCircle,
@@ -100,10 +117,10 @@ fun CompletedStatusLabel() {
             )
             Text(
                 text = "Complete",
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
-                modifier = Modifier.padding(start = 10.dp)
+                modifier = Modifier.padding(start = 4.dp)
             )
         }
     }

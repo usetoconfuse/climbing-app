@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +49,7 @@ import com.example.climbing_app.data.ClimbTagHolds
 import com.example.climbing_app.data.ClimbTagIncline
 import com.example.climbing_app.data.ClimbTagStyle
 import com.example.climbing_app.ui.ClimbViewModel
-import com.example.climbing_app.ui.components.CompletedStatusLabel
+import com.example.climbing_app.ui.components.CompletedStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import kotlinx.coroutines.launch
@@ -58,7 +59,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
 
-    // Observe UI state from the ViewModel
+    // Get all climbs from the ViewModel
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
 
     // Snackbar objects
@@ -104,8 +105,10 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
                         grade = "V3",
                         rating = pos % 4,
                         description = "Lorem ipsum et cetera",
+                        attempts = 5,
+                        uploadDate = "18/05/2025",
                         style = ClimbTagStyle.Powerful,
-                        holds = ClimbTagHolds.Jugs,
+                        holds = ClimbTagHolds.Slopers,
                         incline = ClimbTagIncline.Overhang
                     )
 
@@ -134,17 +137,17 @@ fun YourClimbsList(climbList: List<Climb>, navController: NavController, modifie
     LazyColumn(
         modifier = modifier
     ) {
-        itemsIndexed(climbList) { index, item ->
-            YourClimbsListItem(navController = navController, index = index, data = item)
+        items(climbList) { climb ->
+            YourClimbsListItem(navController = navController, data = climb)
             HorizontalDivider(thickness = 2.dp)
         }
     }
 }
 
 @Composable
-fun YourClimbsListItem(navController: NavController, index: Int, data: Climb) {
+fun YourClimbsListItem(navController: NavController, data: Climb) {
     Card(
-        onClick = { navController.navigate(route = AppScreens.Detail.name+"/$index") },
+        onClick = { navController.navigate(route = AppScreens.Detail.name+"/${data.id}") },
         shape = RectangleShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background
@@ -157,7 +160,7 @@ fun YourClimbsListItem(navController: NavController, index: Int, data: Climb) {
                 painter = painterResource(data.imageResourceId),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier.size(90.dp)
             )
             Column(
                 Modifier
@@ -180,6 +183,8 @@ fun YourClimbsListItem(navController: NavController, index: Int, data: Climb) {
                         rating = data.rating,
                         modifier = Modifier.padding(start = 10.dp, top = 3.dp)
                     )
+                    Spacer(Modifier.weight(1.0f))
+                    CompletedStatusIcon()
                 }
                 // TODO remove/keep this
                 /* Scrapped description preview
@@ -193,24 +198,29 @@ fun YourClimbsListItem(navController: NavController, index: Int, data: Climb) {
                     fontWeight = FontWeight.Light,
                     modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
                 ) */
+                Row {
+                    Text(
+                        text = "uploaded ${data.uploadDate}",
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(Modifier.weight(1.0f))
+                    Text(
+                        text = "${data.attempts} attempts",
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
                 Row(
-                    Modifier.padding(top = 5.dp)
+                    Modifier.padding(top = 15.dp)
                 ) {
                     TagListRow(
                         style = data.style,
                         holds = data.holds,
                         incline = data.incline
                     )
-                }
-                Spacer(
-                    modifier = Modifier.weight(1.0f)
-                )
-                Row(
-                    Modifier
-                        .align(Alignment.End)
-                        .padding(top = 30.dp)
-                ) {
-                    CompletedStatusLabel()
                 }
             }
         }

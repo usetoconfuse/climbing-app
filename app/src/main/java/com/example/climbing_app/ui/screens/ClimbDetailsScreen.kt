@@ -11,11 +11,15 @@ import com.example.climbing_app.ui.ClimbViewModel
 
 
 @Composable
-fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, index: Int?) {
+fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, id: Int?) {
+
+    // Get all climbs from the ViewModel
+    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
+
+    // Get the climb we're viewing from the ViewModel
+    val climb = climbList.find{ climb -> climb.id == id }
+
     Scaffold { innerPadding ->
-        // Observe UI state from the ViewModel
-        val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
-        val size = climbList.size
-        Text(modifier = Modifier.padding(innerPadding), text = "Index: $index, Climbs: $size")
+        Text(modifier = Modifier.padding(innerPadding), text = "ID: $id, name: ${climb?.name}")
     }
 }
