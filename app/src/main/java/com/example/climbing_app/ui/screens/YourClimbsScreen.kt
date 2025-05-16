@@ -200,7 +200,7 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                 ) */
                 Row {
                     Text(
-                        text = "uploaded ${data.uploadDate}",
+                        text = "uploaded on ${data.uploadDate}",
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary
