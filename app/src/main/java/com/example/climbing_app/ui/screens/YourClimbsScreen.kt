@@ -202,9 +202,11 @@ fun YourClimbsListItem(navController: NavController, index: Int, data: ClimbData
                     modifier = Modifier.weight(1.0f)
                 )
                 Row(
-                    Modifier.align(Alignment.End)
+                    Modifier
+                        .align(Alignment.End)
+                        .padding(top = 30.dp)
                 ) {
-                    CompletedStatusLabel() // TODO Fix alignment
+                    CompletedStatusLabel()
                 }
             }
         }
