@@ -27,7 +27,7 @@ data class Climb (
     }
     // Get the formatted upload time
     fun formattedUploadTime(): String {
-        val formatter = DateTimeFormatter.ofPattern("mm:HH")
+        val formatter = DateTimeFormatter.ofPattern("HH:mm")
         return LocalDateTime.parse(this.uploadDate).format(formatter)
     }
 }
