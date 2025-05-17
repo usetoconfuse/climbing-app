@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -120,7 +121,7 @@ fun CompletionStatusIcon(isComplete: Boolean) {
 
     // Change label based on completion status
     val labelColor = if (isComplete) Color(0xFF78A55A) else Color(0xFF8C8C8C)
-    val labelIcon = if (isComplete) Icons.Filled.Check else Icons.Filled.Clear
+    val labelIcon = if (isComplete) Icons.Filled.Check else Icons.Filled.MoreVert
 
     Surface(
         color = labelColor,
@@ -135,7 +136,9 @@ fun CompletionStatusIcon(isComplete: Boolean) {
                 imageVector = labelIcon,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier
+                    .size(16.dp)
+                    .rotate(if (isComplete) 0.0f else 90.0f)
             )
         }
     }
@@ -147,7 +150,7 @@ fun CompletionStatusLabel(isComplete: Boolean) {
 
     // Change label based on completion status
     val labelColor = if (isComplete) Color(0xFF78A55A) else Color(0xFF8C8C8C)
-    val labelIcon = if (isComplete) Icons.Filled.Check else Icons.Filled.Clear
+    val labelIcon = if (isComplete) Icons.Filled.Check else Icons.Filled.MoreVert
     val labelText = if (isComplete) "Complete" else "Incomplete"
 
     Surface(
@@ -163,7 +166,9 @@ fun CompletionStatusLabel(isComplete: Boolean) {
                 imageVector = labelIcon,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier
+                    .size(18.dp)
+                    .rotate(if (isComplete) 0.0f else 90.0f)
             )
             Text(
                 text = labelText,
