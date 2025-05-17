@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
@@ -118,7 +119,7 @@ fun CompletionStatusIcon(isComplete: Boolean) {
 
     // Change label based on completion status
     val labelColor = if (isComplete) Color(0xFF78A55A) else Color(0xFF8C8C8C)
-    val labelIcon = if (isComplete) Icons.Filled.CheckCircle else Icons.Filled.Clear
+    val labelIcon = if (isComplete) Icons.Filled.Check else Icons.Filled.Clear
 
     Surface(
         color = labelColor,
