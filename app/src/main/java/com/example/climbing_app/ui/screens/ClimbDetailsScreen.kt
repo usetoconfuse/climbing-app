@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import com.example.climbing_app.ui.ClimbViewModel
+import com.example.climbing_app.ui.components.ClimbingTopAppBar
 
 
 @Composable
@@ -16,10 +17,14 @@ fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, id: Int?) {
     // Get all climbs from the ViewModel
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
 
-    // Get the climb we're viewing from the ViewModel
+    // Find the climb we're viewing
     val climb = climbList.find{ climb -> climb.id == id }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        topBar = {
+            ClimbingTopAppBar(climb?.name ?: "Climb not found")
+        },
+    ) { innerPadding ->
         Text(modifier = Modifier.padding(innerPadding), text = "ID: $id, name: ${climb?.name}")
     }
 }

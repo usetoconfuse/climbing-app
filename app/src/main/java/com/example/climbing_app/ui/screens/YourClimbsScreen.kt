@@ -11,22 +11,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -49,13 +43,13 @@ import com.example.climbing_app.data.ClimbTagHolds
 import com.example.climbing_app.data.ClimbTagIncline
 import com.example.climbing_app.data.ClimbTagStyle
 import com.example.climbing_app.ui.ClimbViewModel
+import com.example.climbing_app.ui.components.ClimbingTopAppBar
 import com.example.climbing_app.ui.components.CompletedStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
 
@@ -68,24 +62,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                title = {
-                    Text("Your Climbs")
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* open nav drawer */ }) {
-                        Icon(Icons.Filled.Menu, "Menu")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* change theme */ }) {
-                        Icon(Icons.Filled.Settings, "Change Theme")
-                    }
-                }
-            )
+            ClimbingTopAppBar("Your Climbs")
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState)
