@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -92,6 +93,7 @@ fun TagLabel(tag: ClimbTag) {
     }
 }
 
+// Show 0-3 stars depending on rating
 @Composable
 fun RatingStars(rating: Int, modifier: Modifier) {
     Row(
@@ -109,10 +111,16 @@ fun RatingStars(rating: Int, modifier: Modifier) {
     }
 }
 
+// Completion status icon only
 @Composable
-fun CompletedStatusIcon() {
+fun CompletionStatusIcon(isComplete: Boolean) {
+
+    // Change label based on completion status
+    val labelColor = if (isComplete) Color(0xFF78A55A) else Color(0xFF8C8C8C)
+    val labelIcon = if (isComplete) Icons.Filled.CheckCircle else Icons.Filled.Clear
+
     Surface(
-        color = Color(0xFF78A55A),
+        color = labelColor,
         shape = RoundedCornerShape(20.dp)
     ) {
         Row(
@@ -121,7 +129,7 @@ fun CompletedStatusIcon() {
                 .padding(4.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.CheckCircle,
+                imageVector = labelIcon,
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier.size(16.dp)
@@ -130,25 +138,33 @@ fun CompletedStatusIcon() {
     }
 }
 
+// Completion status icon and text
 @Composable
-fun CompletedStatusLabel() {
+fun CompletionStatusLabel(isComplete: Boolean) {
+
+    // Change label based on completion status
+    val labelColor = if (isComplete) Color(0xFF78A55A) else Color(0xFF8C8C8C)
+    val labelIcon = if (isComplete) Icons.Filled.CheckCircle else Icons.Filled.Clear
+    val labelText = if (isComplete) "Complete" else "Incomplete"
+
     Surface(
-        color = Color(0xFF78A55A),
+        color = labelColor,
         shape = RoundedCornerShape(20.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(4.dp)
+                .padding(horizontal = 6.dp, vertical = 4.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.CheckCircle,
+                imageVector = labelIcon,
                 contentDescription = null,
-                tint = Color.White
+                tint = Color.White,
+                modifier = Modifier.size(18.dp)
             )
             Text(
-                text = "Complete",
-                fontSize = 14.sp,
+                text = labelText,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 modifier = Modifier.padding(start = 4.dp)

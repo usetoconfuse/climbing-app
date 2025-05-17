@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -47,13 +46,10 @@ import com.example.climbing_app.data.ClimbTagIncline
 import com.example.climbing_app.data.ClimbTagStyle
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingTopAppBar
-import com.example.climbing_app.ui.components.CompletedStatusIcon
+import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -151,7 +147,7 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
             )
             Column(
                 Modifier
-                    .padding(start = 10.dp)
+                    .padding(start = 10.dp, end = 5.dp)
                     .fillMaxWidth()
             ) {
                 Row(
@@ -171,7 +167,7 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                         modifier = Modifier.padding(start = 10.dp, top = 3.dp)
                     )
                     Spacer(Modifier.weight(1.0f))
-                    CompletedStatusIcon()
+                    CompletionStatusIcon(data.isComplete)
                 }
                 Row {
                     Text(
