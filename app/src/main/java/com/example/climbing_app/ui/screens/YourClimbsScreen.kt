@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -33,6 +35,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -102,11 +105,16 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
             )
         }
     ) { innerPadding ->
-        YourClimbsList(
-            climbList = climbList,
-            navController = navController,
-            modifier = Modifier.padding(innerPadding)
-        )
+        // Show 'no climbs' message if no climbs exist
+        if (climbList.isEmpty()) {
+            NoClimbsMessage(Modifier.padding(innerPadding))
+        } else {
+            YourClimbsList(
+                climbList = climbList,
+                navController = navController,
+                modifier = Modifier.padding(innerPadding)
+            )
+        }
     }
 }
 
@@ -191,5 +199,35 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun NoClimbsMessage(modifier: Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth()
+    ) {
+        Icon(
+            modifier = Modifier.size(72.dp),
+            imageVector = Icons.Filled.Search,
+            contentDescription = null
+        )
+        Text(
+            text = "No climbs found",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 10.dp),
+        )
+        Text(
+            text = "You haven't uploaded any climbs yet.\r\nPress the upload button to get started!",
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp,
+            fontStyle = FontStyle.Italic,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(top = 5.dp)
+        )
     }
 }
