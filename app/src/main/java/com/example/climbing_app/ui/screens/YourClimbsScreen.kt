@@ -186,18 +186,6 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                     Spacer(Modifier.weight(1.0f))
                     CompletedStatusIcon()
                 }
-                // TODO remove/keep this
-                /* Scrapped description preview
-                var previewDesc = data.description
-                if (previewDesc.length > 10) {
-                    previewDesc = "${previewDesc.substring(0, 15)}..."
-                }
-                Text(
-                    text = previewDesc,
-                    fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.Light,
-                    modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
-                ) */
                 Row {
                     Text(
                         text = "uploaded on ${data.uploadDate}",
