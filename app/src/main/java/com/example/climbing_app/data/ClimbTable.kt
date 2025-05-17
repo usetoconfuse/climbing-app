@@ -20,6 +20,11 @@ data class Climb (
     val holds: ClimbTagHolds,
     val incline: ClimbTagIncline
 ) {
+    // Get the upload date as LocalDateTime
+    fun getUploadDateTime(): LocalDateTime {
+        return LocalDateTime.parse(this.uploadDate)
+    }
+
     // Get the formatted upload date
     fun formattedUploadDate(): String {
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")

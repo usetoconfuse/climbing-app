@@ -38,7 +38,7 @@ interface ClimbTag {
 
 enum class ClimbTagType(
     val imageResourceId: Int,
-    val labelColor: Color
+    val labelColor: Color // TODO remove this
 ) {
     Style(R.drawable.tag_img_style, Color(0xFF9D70BC)),
     Holds(R.drawable.tag_img_holds, Color(0xFFBC7071)),
