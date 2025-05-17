@@ -2,15 +2,17 @@ package com.example.climbing_app.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -32,6 +34,7 @@ import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
+import com.example.climbing_app.ui.components.TagListRow
 
 
 @Composable
@@ -60,64 +63,98 @@ fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, id: Int?) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ClimbDetailsContent(modifier: Modifier, data: Climb) {
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp)
+            .fillMaxWidth()
+            .padding(top = 16.dp)
     ) {
-        Image(
-            painter = painterResource(data.imageResourceId),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-        )
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
+        // Climb info
+        Column(
+            Modifier.padding(start = 16.dp, end = 16.dp)
         ) {
-            Text(
-                text = data.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
-            )
-            Text(
-                text = data.grade,
-                fontSize = 20.sp,
-                modifier = Modifier.padding(start = 10.dp, bottom = 2.dp)
-            )
-            RatingStars(
-                rating = data.rating,
+            Image(
+                painter = painterResource(data.imageResourceId),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .padding(start = 10.dp, bottom = 6.dp)
+                    .size(150.dp)
+                    .aspectRatio(1f)
+                    .align(Alignment.CenterHorizontally)
             )
-            Spacer(Modifier.weight(1.0f))
-            CompletionStatusLabel(data.isComplete)
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 2.dp)
-        ) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Column(
+                    Modifier.weight(3.0f)
+                ) {
+                    FlowRow {
+                        Text(
+                            text = data.name,
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                        Text(
+                            text = data.grade,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                        RatingStars(
+                            rating = data.rating,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                    Text(
+                        text = "uploaded on ${data.formattedUploadDate()} at ${data.formattedUploadTime()}",
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(start = 2.dp)
+                    )
+                }
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.weight(2.0f)
+                ) {
+                    CompletionStatusLabel(data.isComplete)
+                    Text(
+                        text = "${data.attempts} attempts",
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(top = 2.dp, end = 2.dp)
+                    )
+                }
+            }
             Text(
-                text = "uploaded on ${data.formattedUploadDate()} at ${data.formattedUploadTime()}",
-                fontSize = 12.sp,
-                fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.secondary
+                text = data.description,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(start = 2.dp)
             )
-            Spacer(Modifier.weight(1.0f))
-            Text(
-                text = "${data.attempts} attempts",
-                fontSize = 12.sp,
-                fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.secondary
+            TagListRow(
+                style = data.style,
+                holds = data.holds,
+                incline = data.incline,
+                modifier = Modifier
+                    .width(250.dp)
+                    .padding(top = 10.dp)
             )
         }
+        HorizontalDivider(
+            thickness = 2.dp,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Text(
+            text = "History",
+            color = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.padding(top = 8.dp, start = 18.dp)
+        )
+        /* Activity list component */
     }
 }
 

@@ -176,15 +176,14 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
-                Row(
-                    Modifier.padding(top = 10.dp)
-                ) {
-                    TagListRow(
-                        style = data.style,
-                        holds = data.holds,
-                        incline = data.incline
-                    )
-                }
+                TagListRow(
+                    style = data.style,
+                    holds = data.holds,
+                    incline = data.incline,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                )
             }
         }
     }

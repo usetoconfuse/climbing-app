@@ -2,7 +2,6 @@ package com.example.climbing_app.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -60,9 +59,12 @@ fun ClimbingTopAppBar(title: String) {
 }
 
 @Composable
-fun TagListRow(style: ClimbTagStyle, holds: ClimbTagHolds, incline: ClimbTagIncline) {
+fun TagListRow(style: ClimbTagStyle,
+               holds: ClimbTagHolds,
+               incline: ClimbTagIncline,
+               modifier: Modifier) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
     ) {
         for (i in listOf(style, holds, incline)) {
             Box(
