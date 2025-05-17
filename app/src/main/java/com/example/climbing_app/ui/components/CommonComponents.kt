@@ -148,7 +148,7 @@ fun CompletionStatusLabel(isComplete: Boolean) {
 
     // Change label based on completion status
     val labelColor = if (isComplete) Color(0xFF78A55A) else Color(0xFF8C8C8C)
-    val labelIcon = if (isComplete) Icons.Filled.CheckCircle else Icons.Filled.Clear
+    val labelIcon = if (isComplete) Icons.Filled.Check else Icons.Filled.Clear
     val labelText = if (isComplete) "Complete" else "Incomplete"
 
     Surface(
