@@ -19,14 +19,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -39,17 +35,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
-import com.example.climbing_app.R
 import com.example.climbing_app.data.Climb
-import com.example.climbing_app.data.ClimbTagHolds
-import com.example.climbing_app.data.ClimbTagIncline
-import com.example.climbing_app.data.ClimbTagStyle
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -58,46 +49,15 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
     // Get all climbs from the ViewModel
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
 
-    // Snackbar objects
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
     Scaffold(
         topBar = {
             ClimbingTopAppBar("Your Climbs")
         },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState)
-        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                text = { Text("UPLOAD") },
+                text = { Text("NEW") },
                 icon = { Icon(Icons.Filled.Add, null) },
-                onClick = {
-
-                    // Upload a new climb
-                    // TODO go to upload screen/popup
-                    val pos = climbList.size + 1
-                    val newClimb = Climb(
-                        name = "La Dérive des Incontinents $pos",
-                        imageResourceId = R.drawable.climb_img_1,
-                        grade = "V3",
-                        rating = pos % 4,
-                        description = "Lorem ipsum et cetera",
-                        style = ClimbTagStyle.Powerful,
-                        holds = ClimbTagHolds.Slopers,
-                        incline = ClimbTagIncline.Overhang
-                    )
-
-                    climbViewModel.insert(newClimb)
-
-                    scope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = "'${newClimb.name}' uploaded successfully",
-                            withDismissAction = true
-                        )
-                    }
-                }
+                onClick = { navController.navigate(route = AppScreens.Upload.name) }
             )
         }
     ) { innerPadding ->

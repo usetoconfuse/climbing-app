@@ -9,14 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.screens.ClimbDetailsScreen
+import com.example.climbing_app.ui.screens.UploadClimbScreen
 import com.example.climbing_app.ui.screens.YourClimbsScreen
 import com.example.climbing_app.ui.theme.ClimbingappTheme
 
@@ -48,6 +51,13 @@ class MainActivity : ComponentActivity() {
                         ) {
                             YourClimbsScreen(climbViewModel, navController)
                         }
+                        // Upload climb, this is a dialog so it appears over the previous screen
+                        dialog(
+                            route = AppScreens.Upload.name,
+                            dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
+                        ) {
+                            UploadClimbScreen(climbViewModel, navController)
+                        }
                         // Climb details
                         composable(
                             route = AppScreens.Detail.name+"/{id}",
@@ -72,5 +82,6 @@ class MainActivity : ComponentActivity() {
 
 enum class AppScreens {
     Climbs,
+    Upload,
     Detail
 }
