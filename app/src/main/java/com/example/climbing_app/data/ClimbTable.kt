@@ -3,6 +3,7 @@ package com.example.climbing_app.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+
 @Entity (tableName = "climbs")
 data class Climb(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

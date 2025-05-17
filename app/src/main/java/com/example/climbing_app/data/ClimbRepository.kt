@@ -2,6 +2,7 @@ package com.example.climbing_app.data
 
 import androidx.lifecycle.LiveData
 
+
 class ClimbRepository(private val climbDao: ClimbDao) {
     val allClimbs: LiveData<List<Climb>> = climbDao.getAllClimbs()
     suspend fun insert(climb: Climb) {

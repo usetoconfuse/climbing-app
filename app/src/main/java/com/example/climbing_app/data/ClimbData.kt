@@ -3,6 +3,7 @@ package com.example.climbing_app.data
 import androidx.compose.ui.graphics.Color
 import com.example.climbing_app.R
 
+
 enum class ClimbTagStyle: ClimbTag {
     Powerful,
     Technical,

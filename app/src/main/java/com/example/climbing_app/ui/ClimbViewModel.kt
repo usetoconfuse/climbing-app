@@ -9,6 +9,7 @@ import com.example.climbing_app.data.ClimbDatabase
 import com.example.climbing_app.data.ClimbRepository
 import kotlinx.coroutines.launch
 
+
 class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ClimbRepository
     val allClimbs: LiveData<List<Climb>>
