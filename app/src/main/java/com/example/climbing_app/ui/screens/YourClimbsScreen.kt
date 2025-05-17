@@ -48,6 +48,9 @@ import com.example.climbing_app.ui.components.CompletedStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -82,8 +85,6 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
                         grade = "V3",
                         rating = pos % 4,
                         description = "Lorem ipsum et cetera",
-                        attempts = 5,
-                        uploadDate = "18/05/2025",
                         style = ClimbTagStyle.Powerful,
                         holds = ClimbTagHolds.Slopers,
                         incline = ClimbTagIncline.Overhang
@@ -123,6 +124,7 @@ fun YourClimbsList(climbList: List<Climb>, navController: NavController, modifie
 
 @Composable
 fun YourClimbsListItem(navController: NavController, data: Climb) {
+
     Card(
         onClick = { navController.navigate(route = AppScreens.Detail.name+"/${data.id}") },
         shape = RectangleShape,
@@ -165,7 +167,7 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                 }
                 Row {
                     Text(
-                        text = "uploaded on ${data.uploadDate}",
+                        text = "uploaded on ${data.formattedUploadDate()}",
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary

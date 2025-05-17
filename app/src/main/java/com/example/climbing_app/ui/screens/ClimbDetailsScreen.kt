@@ -22,9 +22,13 @@ fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, id: Int?) {
 
     Scaffold(
         topBar = {
-            ClimbingTopAppBar(climb?.name ?: "Climb not found")
+            ClimbingTopAppBar("Details")
         },
     ) { innerPadding ->
-        Text(modifier = Modifier.padding(innerPadding), text = "ID: $id, name: ${climb?.name}")
+        // Don't load the page if data wasn't retrieved
+        if (climb == null) Text("Climb not found") else
+
+        Text(modifier = Modifier.padding(innerPadding), text = "ID: $id, name: ${climb.name}")
+
     }
 }
