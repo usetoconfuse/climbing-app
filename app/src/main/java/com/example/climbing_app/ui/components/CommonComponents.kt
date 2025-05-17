@@ -104,6 +104,7 @@ fun RatingStars(rating: Int, modifier: Modifier) {
                 Icon(
                     modifier = Modifier.size(18.dp),
                     imageVector = Icons.Filled.Star,
+                    tint = MaterialTheme.colorScheme.secondary,
                     contentDescription = null
                 )
             }

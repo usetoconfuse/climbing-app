@@ -79,7 +79,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
                     // TODO go to upload screen/popup
                     val pos = climbList.size + 1
                     val newClimb = Climb(
-                        name = "Climb $pos",
+                        name = "La Dérive des Incontinents $pos",
                         imageResourceId = R.drawable.climb_img_1,
                         grade = "V3",
                         rating = pos % 4,
@@ -143,38 +143,30 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                 painter = painterResource(data.imageResourceId),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(90.dp)
+                modifier = Modifier.size(80.dp)
             )
             Column(
                 Modifier
-                    .padding(start = 10.dp, end = 5.dp)
+                    .padding(start = 10.dp)
                     .fillMaxWidth()
             ) {
-                Row(
-                    verticalAlignment = Alignment.Top
-                ) {
+                Row {
                     Text(
                         text = data.name,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = data.grade,
-                        modifier = Modifier.padding(start = 10.dp)
-                    )
-                    RatingStars(
-                        rating = data.rating,
-                        modifier = Modifier.padding(start = 10.dp, top = 3.dp)
+                        fontSize = 14.sp
                     )
                     Spacer(Modifier.weight(1.0f))
                     CompletionStatusIcon(data.isComplete)
                 }
                 Row {
                     Text(
-                        text = "uploaded on ${data.formattedUploadDate()}",
-                        fontSize = 12.sp,
-                        fontStyle = FontStyle.Italic,
+                        text = data.grade,
+                        fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary
+                    )
+                    RatingStars(
+                        rating = data.rating,
+                        modifier = Modifier.padding(start = 6.dp, top = 2.dp)
                     )
                     Spacer(Modifier.weight(1.0f))
                     Text(
@@ -185,7 +177,7 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
                     )
                 }
                 Row(
-                    Modifier.padding(top = 15.dp)
+                    Modifier.padding(top = 10.dp)
                 ) {
                     TagListRow(
                         style = data.style,
