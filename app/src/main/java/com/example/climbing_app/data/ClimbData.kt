@@ -35,6 +35,7 @@ interface ClimbTag {
     val type: ClimbTagType
 }
 
+// TODO merge this into each enum
 enum class ClimbTagType(
     val imageResourceId: Int,
 ) {
