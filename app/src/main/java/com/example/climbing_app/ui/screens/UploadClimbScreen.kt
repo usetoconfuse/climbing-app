@@ -2,8 +2,12 @@ package com.example.climbing_app.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -12,20 +16,33 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.data.ClimbTagHolds
 import com.example.climbing_app.data.ClimbTagIncline
 import com.example.climbing_app.data.ClimbTagStyle
+import com.example.climbing_app.data.ClimbTagType
 import com.example.climbing_app.ui.ClimbViewModel
 
 
@@ -33,11 +50,17 @@ import com.example.climbing_app.ui.ClimbViewModel
 @Composable
 fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavController) {
 
-    // Get all climbs from the ViewModel
-    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
-
     // Get context for toast
     val context = LocalContext.current
+
+    // Input values for new climb
+    var name by rememberSaveable { mutableStateOf("") }
+    var grade by rememberSaveable { mutableStateOf("") }
+    var rating by rememberSaveable { mutableStateOf("") }
+    var description by rememberSaveable { mutableStateOf("") }
+    var style by rememberSaveable { mutableStateOf(ClimbTagStyle.Powerful) }
+    var holds by rememberSaveable { mutableStateOf(ClimbTagHolds.Jugs) }
+    var incline by rememberSaveable { mutableStateOf(ClimbTagIncline.Wall) }
 
     Scaffold(
         topBar = {
@@ -58,33 +81,233 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
-            Modifier.padding(innerPadding)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(top = 16.dp, start = 8.dp, end = 8.dp)
         ) {
-            Text("Upload")
+
+            // Row for name TextField
+            Row(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                TextField(
+                    label = { Text("Name") },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    value = name,
+                    onValueChange = {
+                        if (name.length <= 30) name = it
+                    }
+                )
+            }
+
+            // Row for grade and rating TextFields
+            Row(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Row(
+                    Modifier
+                        .weight(1.0f)
+                        .fillMaxWidth()
+                        .padding(end = 8.dp)
+                ) {
+                    TextField(
+                        label = { Text("V-grade (0-17)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = grade,
+                        onValueChange = {
+                            if (it.isEmpty()) grade = it
+                            else if (it.isDigitsOnly()) {
+                                val intVal = Integer.parseInt(it)
+                                if (intVal < 0) grade = "0"
+                                else if (intVal > 17) grade = "17"
+                                else grade = intVal.toString()
+                            }
+                        }
+                    )
+                }
+                Row(
+                    Modifier
+                        .weight(1.0f)
+                        .fillMaxWidth()
+                        .padding(start = 8.dp)
+                ) {
+                    TextField(
+                        label = { Text("Rating (0-3)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = rating,
+                        onValueChange = {
+                            if (it.isEmpty()) rating = it
+                            else if (it.isDigitsOnly()) {
+                                val intVal = Integer.parseInt(it)
+                                if (intVal < 0) rating = "0"
+                                else if (intVal > 3) rating = "3"
+                                else rating = intVal.toString()
+                            }
+                        }
+                    )
+                }
+            }
+
+            // Row for description TextField
+            Row(
+                Modifier.padding(8.dp)
+            ) {
+                TextField(
+                    label = { Text("Description") },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    value = description,
+                    onValueChange = {
+                        if (description.length <= 100) description = it
+                    }
+                )
+            }
+
+            // Label and segmented button row for style tag
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(ClimbTagType.Style.imageResourceId),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = "Style",
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+            }
+            Row(
+                Modifier.padding(8.dp)
+            ) {
+                SingleChoiceSegmentedButtonRow(
+                    Modifier.fillMaxWidth()
+                ) {
+                    ClimbTagStyle.entries.forEach { buttonStyle ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = buttonStyle.ordinal,
+                                count = ClimbTagStyle.entries.size
+                            ),
+                            onClick = { style = buttonStyle },
+                            selected = style == buttonStyle,
+                            icon = {},
+                            label = { Text(text = buttonStyle.name, fontSize = 11.sp) }
+                        )
+                    }
+                }
+            }
+
+            // Label and segmented button row for holds tag
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(ClimbTagType.Holds.imageResourceId),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = "Holds",
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+            }
+            Row(
+                Modifier.padding(8.dp)
+            ) {
+                SingleChoiceSegmentedButtonRow(
+                    Modifier.fillMaxWidth()
+                ) {
+                    ClimbTagHolds.entries.forEach { buttonHolds ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = buttonHolds.ordinal,
+                                count = ClimbTagHolds.entries.size
+                            ),
+                            onClick = { holds = buttonHolds },
+                            selected = holds == buttonHolds,
+                            icon = {},
+                            label = { Text(text = buttonHolds.name, fontSize = 11.sp) }
+                        )
+                    }
+                }
+            }
+
+            // Label and segmented button row for incline tag
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(ClimbTagType.Incline.imageResourceId),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = "Incline",
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+            }
+            Row(
+                Modifier.padding(8.dp)
+            ) {
+                SingleChoiceSegmentedButtonRow(
+                    Modifier.fillMaxWidth()
+                ) {
+                    ClimbTagIncline.entries.forEach { buttonIncline ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = buttonIncline.ordinal,
+                                count = ClimbTagIncline.entries.size
+                            ),
+                            onClick = { incline = buttonIncline },
+                            selected = incline == buttonIncline,
+                            icon = {},
+                            label = { Text(text = buttonIncline.name, fontSize = 11.sp) }
+                        )
+                    }
+                }
+            }
+
+            // Upload button
             Button(
+                modifier = Modifier.padding(top = 24.dp),
                 onClick = {
 
-                    // Upload a new climb
-                    // TODO real upload form
-                    val pos = climbList.size + 1
-                    val newClimb = Climb(
-                        name = "La Dérive des Incontinents $pos",
-                        imageResourceId = R.drawable.climb_img_1,
-                        grade = "V3",
-                        rating = pos % 4,
-                        description = "Lorem ipsum et cetera",
-                        style = ClimbTagStyle.Technical,
-                        holds = ClimbTagHolds.Slopers,
-                        incline = ClimbTagIncline.Overhang
-                    )
+                    // Display toast and do not upload if any input field is empty
+                    if (listOf(name, grade, rating, description).any { x -> x.isEmpty() }) {
+                        Toast.makeText(
+                            context,
+                            "Cannot upload climb with empty fields",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    else {
+                        // Upload the climb
+                        val newClimb = Climb(
+                            name = name,
+                            imageResourceId = R.drawable.climb_img_1,
+                            grade = "V$grade",
+                            rating = Integer.parseInt(rating),
+                            description = description,
+                            style = style,
+                            holds = holds,
+                            incline = incline
+                        )
 
-                    climbViewModel.insert(newClimb)
-                    Toast.makeText(
-                        context,
-                        "${newClimb.name} uploaded successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    navController.popBackStack()
+                        climbViewModel.insert(newClimb)
+                        Toast.makeText(
+                            context,
+                            "${newClimb.name} uploaded successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        navController.popBackStack()
+                    }
                 }
             ) {
                 Text("UPLOAD")
