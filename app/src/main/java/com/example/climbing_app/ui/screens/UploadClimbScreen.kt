@@ -1,12 +1,15 @@
 package com.example.climbing_app.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -15,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -88,19 +92,35 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
                 .padding(top = 16.dp, start = 8.dp, end = 8.dp)
         ) {
 
-            // Row for name TextField
+            // Row for name TextField and add photo button
             Row(
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextField(
+                OutlinedTextField(
                     label = { Text("Name") },
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .width(200.dp),
                     value = name,
                     onValueChange = {
                         if (name.length <= 30) name = it
                     }
                 )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Button(
+                        onClick = {
+                            /* Upload photo */
+                        }
+                    ) {
+                        Icon(painterResource(R.drawable.photo_camera), null)
+                    }
+                }
             }
 
             // Row for grade and rating TextFields
@@ -113,7 +133,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
                         .fillMaxWidth()
                         .padding(end = 8.dp)
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         label = { Text("V-grade (0-17)") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         value = grade,
@@ -134,7 +154,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
                         .fillMaxWidth()
                         .padding(start = 8.dp)
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         label = { Text("Rating (0-3)") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         value = rating,
@@ -155,7 +175,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
             Row(
                 Modifier.padding(8.dp)
             ) {
-                TextField(
+                OutlinedTextField(
                     label = { Text("Description") },
                     modifier = Modifier
                         .fillMaxWidth(),
