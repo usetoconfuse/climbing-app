@@ -1,6 +1,5 @@
 package com.example.climbing_app.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,8 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.climbing_app.AppScreens
+import com.example.climbing_app.R
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingTopAppBar
@@ -100,8 +102,9 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
         Row(
             Modifier.padding(10.dp)
         ) {
-            Image(
-                painter = painterResource(data.imageResourceId),
+            AsyncImage(
+                model = data.imageUri.toUri(),
+                placeholder = painterResource(R.drawable.img_placeholder),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

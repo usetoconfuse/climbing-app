@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 data class Climb (
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val imageResourceId: Int,
+    val imageUri: String,
     val grade: String,
     val rating: Int = 0,
     val description: String,

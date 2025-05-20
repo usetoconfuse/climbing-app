@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.coil.compose)
     implementation("androidx.compose.runtime:runtime-livedata:1.8.1")
     implementation("androidx.room:room-common:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")

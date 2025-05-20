@@ -1,25 +1,25 @@
 package com.example.climbing_app.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.widget.Toast
-import androidx.compose.foundation.Image
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +29,6 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -45,8 +44,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.data.ClimbTagHolds
@@ -54,6 +57,10 @@ import com.example.climbing_app.data.ClimbTagIncline
 import com.example.climbing_app.data.ClimbTagStyle
 import com.example.climbing_app.data.ClimbTagType
 import com.example.climbing_app.ui.ClimbViewModel
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Objects
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +78,89 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
     var style by rememberSaveable { mutableStateOf(ClimbTagStyle.Powerful) }
     var holds by rememberSaveable { mutableStateOf(ClimbTagHolds.Jugs) }
     var incline by rememberSaveable { mutableStateOf(ClimbTagIncline.Wall) }
+    var capturedImageUri by rememberSaveable { mutableStateOf<Uri>(Uri.EMPTY) }
+
+    // Create a file to store photo and get its URI
+    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
+    val timeStamp = LocalDateTime.now().format(formatter)
+    val imageFileName = "JPEG_" + timeStamp + "_"
+
+    val file = File.createTempFile(
+        imageFileName, // prefix
+        ".jpg", // suffix
+        context.externalCacheDir // directory
+    )
+
+    val uri = FileProvider.getUriForFile(
+        Objects.requireNonNull(context),
+        "${context.packageName}.provider",
+        file
+    )
+
+    // Use Intent to move to camera and store the captured photo at the given URI
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) {
+        // Don't replace previous image if the user backed out of the camera app
+        if (it) capturedImageUri = uri
+    }
+
+    // Prompt for camera permission when needed
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        if (it) {
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Take photo using intents
+    fun takePhoto() {
+        val permissionCheckResult =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+            cameraLauncher.launch(uri)
+        } else {
+            // Request a permission
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    // Upload
+    fun uploadClimb() {
+        // Display toast and do not upload if any input field is empty
+        if (listOf(name, grade, rating, description).any { x -> x.isEmpty() }) {
+            Toast.makeText(
+                context,
+                "Cannot upload climb with empty fields",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        else {
+            // Upload the climb
+            val newClimb = Climb(
+                name = name,
+                imageUri = if (capturedImageUri.path?.isNotEmpty() == true) capturedImageUri.toString()
+                           else "android.resource://com.example.climbing_app/drawable/img_placeholder".toUri().toString(),
+                grade = "V$grade",
+                rating = Integer.parseInt(rating),
+                description = description,
+                style = style,
+                holds = holds,
+                incline = incline
+            )
+
+            climbViewModel.insert(newClimb)
+            Toast.makeText(
+                context,
+                "${newClimb.name} uploaded successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+            navController.popBackStack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -123,9 +213,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
                                 .padding(start = 8.dp, top = 12.dp)
                                 .weight(1.0f)
                                 .aspectRatio(1f),
-                            onClick = {
-                                // TODO upload photo
-                            }
+                            onClick = { takePhoto() }
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.photo_camera),
@@ -175,19 +263,18 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
                         )
                     }
                 }
-                Column(
-                    Modifier
+                AsyncImage(
+                    // Show thumbnail if a photo has been taken, otherwise fallback to placeholder
+                    // FIXME image errors if you rotate the screen whilst in the camera app
+                    model = capturedImageUri,
+                    error = painterResource(R.drawable.img_placeholder),
+                    contentDescription = "Picture",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
                         .weight(1.0f)
                         .padding(top = 8.dp, start = 16.dp)
-                ) {
-                    // Climb thumbnail
-                    Image(
-                        painter = painterResource(R.drawable.climb_img_1),
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .aspectRatio(1f),
-                        contentDescription = null)
-                }
+                        .aspectRatio(1f)
+                )
             }
             // Description TextField
             OutlinedTextField(
@@ -300,38 +387,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
             // Upload button
             Button(
                 modifier = Modifier.padding(top = 24.dp),
-                onClick = {
-
-                    // Display toast and do not upload if any input field is empty
-                    if (listOf(name, grade, rating, description).any { x -> x.isEmpty() }) {
-                        Toast.makeText(
-                            context,
-                            "Cannot upload climb with empty fields",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    else {
-                        // Upload the climb
-                        val newClimb = Climb(
-                            name = name,
-                            imageResourceId = R.drawable.climb_img_1,
-                            grade = "V$grade",
-                            rating = Integer.parseInt(rating),
-                            description = description,
-                            style = style,
-                            holds = holds,
-                            incline = incline
-                        )
-
-                        climbViewModel.insert(newClimb)
-                        Toast.makeText(
-                            context,
-                            "${newClimb.name} uploaded successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        navController.popBackStack()
-                    }
-                }
+                onClick = { uploadClimb() }
             ) {
                 Text("UPLOAD")
             }
