@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -142,8 +141,12 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
             // Upload the climb
             val newClimb = Climb(
                 name = name,
-                imageUri = if (capturedImageUri.path?.isNotEmpty() == true) capturedImageUri.toString()
-                           else "android.resource://com.example.climbing_app/drawable/img_placeholder".toUri().toString(),
+                imageUri = if (capturedImageUri.path?.isNotEmpty() == true){
+                    capturedImageUri.toString()
+                } else {
+                    // Default image if none uploaded
+                    "android.resource://com.example.climbing_app/drawable/img_placeholder"
+                },
                 grade = "V$grade",
                 rating = Integer.parseInt(rating),
                 description = description,
