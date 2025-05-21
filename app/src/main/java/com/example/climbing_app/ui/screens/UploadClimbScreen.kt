@@ -6,6 +6,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,7 +49,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.data.ClimbTagHolds
@@ -78,6 +79,9 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
     var holds by rememberSaveable { mutableStateOf(ClimbTagHolds.Jugs) }
     var incline by rememberSaveable { mutableStateOf(ClimbTagIncline.Wall) }
     var capturedImageUri by rememberSaveable { mutableStateOf<Uri>(Uri.EMPTY) }
+
+    // Painter resource for image preview
+    val previewPainter = rememberAsyncImagePainter(capturedImageUri)
 
     // Create a file to store photo and get its URI
     val formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
@@ -266,11 +270,11 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
                         )
                     }
                 }
-                AsyncImage(
+                Image(
                     // Show thumbnail if a photo has been taken, otherwise fallback to placeholder
-                    // FIXME image errors if you rotate the screen whilst in the camera app
-                    model = capturedImageUri,
-                    error = painterResource(R.drawable.img_placeholder),
+                    // BUG: image errors if you rotate the screen whilst in the camera app
+                    painter = if (capturedImageUri != Uri.EMPTY) previewPainter
+                              else painterResource(R.drawable.img_placeholder),
                     contentDescription = "Picture",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
