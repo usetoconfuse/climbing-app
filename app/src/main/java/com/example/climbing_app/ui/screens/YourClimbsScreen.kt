@@ -63,7 +63,6 @@ import com.example.climbing_app.ui.components.TagListRow
 
 @Composable
 fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
-
     Scaffold(
         topBar = {
             ClimbingMajorTopAppBar("Your Climbs")
@@ -86,7 +85,10 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun YourClimbsList(climbViewModel: ClimbViewModel, navController: NavController, modifier: Modifier) {
+fun YourClimbsList(
+    climbViewModel: ClimbViewModel,
+    navController: NavController,
+    modifier: Modifier) {
 
     // Get all climbs from the ViewModel
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
