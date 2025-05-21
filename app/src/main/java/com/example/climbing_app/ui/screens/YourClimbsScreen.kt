@@ -1,8 +1,10 @@
 package com.example.climbing_app.ui.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,20 +16,32 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,9 +63,6 @@ import com.example.climbing_app.ui.components.TagListRow
 @Composable
 fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
 
-    // Get all climbs from the ViewModel
-    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
-
     Scaffold(
         topBar = {
             ClimbingTopAppBar("Your Climbs")
@@ -64,34 +75,90 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
             )
         }
     ) { innerPadding ->
-        // Show 'no climbs' message if no climbs exist
-        if (climbList.isEmpty()) {
-            NoClimbsMessage(Modifier.padding(innerPadding))
-        } else {
-            YourClimbsList(
-                climbList = climbList,
-                navController = navController,
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
+        YourClimbsList(
+            climbViewModel = climbViewModel,
+            navController = navController,
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun YourClimbsList(climbList: List<Climb>, navController: NavController, modifier: Modifier) {
-    LazyColumn(
-        modifier = modifier
+fun YourClimbsList(climbViewModel: ClimbViewModel, navController: NavController, modifier: Modifier) {
+
+    // Get all climbs from the ViewModel
+    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
+
+    // User input into search bar
+    var query by rememberSaveable { mutableStateOf("") }
+
+    // Filter only items whose name, grade or tags contain the query string
+    val searchResults by remember {
+        derivedStateOf {
+            if (query.isEmpty()) {
+                climbList
+            } else {
+                climbList.filter {
+                    it.name.contains(query, ignoreCase = true)
+                    || it.grade.contains(query, ignoreCase = true)
+                    || it.style.name.contains(query, ignoreCase = true)
+                    || it.holds.name.contains(query, ignoreCase = true)
+                    || it.incline.name.contains(query, ignoreCase = true)
+                }
+            }
+        }
+    }
+
+    // Image painter resource for climbs with no uploaded photo
+    val placeholderPainter = painterResource(R.drawable.img_placeholder)
+
+    Box(
+        modifier
+            .semantics { isTraversalGroup = true }
     ) {
-        items(climbList) { climb ->
-            YourClimbsListItem(navController = navController, data = climb)
-            HorizontalDivider(thickness = 2.dp)
+        SearchBar(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .semantics { traversalIndex = 0f },
+            windowInsets = WindowInsets(top = 0.dp),
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query = query,
+                    onQueryChange = { query = it },
+                    onSearch = { /* do something */ },
+                    expanded = true,
+                    onExpandedChange = {},
+                    placeholder = { Text("Search") },
+                    leadingIcon = { Icon(Icons.Default.Search, "Search") }
+                )
+            },
+            expanded = true,
+            onExpandedChange = {}
+        ) {
+            // Show 'no climbs' message if no climbs exist / match search
+            if (searchResults.isEmpty()) {
+                NoClimbsMessage(Modifier)
+            } else {
+                LazyColumn(
+                    Modifier.semantics { traversalIndex = 1f }
+                ){
+                    items(searchResults) {
+                        YourClimbsListItem(
+                            navController = navController,
+                            data = it,
+                            placeholder = placeholderPainter
+                        )
+                        HorizontalDivider(thickness = 2.dp)
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun YourClimbsListItem(navController: NavController, data: Climb) {
-
+fun YourClimbsListItem(navController: NavController, data: Climb, placeholder: Painter) {
     Card(
         onClick = { navController.navigate(route = AppScreens.Detail.name+"/${data.id}") },
         shape = RectangleShape,
@@ -104,7 +171,7 @@ fun YourClimbsListItem(navController: NavController, data: Climb) {
         ) {
             AsyncImage(
                 model = data.imageUri.toUri(),
-                placeholder = painterResource(R.drawable.img_placeholder),
+                placeholder = placeholder,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -175,7 +242,7 @@ fun NoClimbsMessage(modifier: Modifier) {
             modifier = Modifier.padding(top = 10.dp),
         )
         Text(
-            text = "You haven't uploaded any climbs yet.\r\nPress the upload button to get started!",
+            text = "Try a different search or upload your first climb!",
             textAlign = TextAlign.Center,
             fontSize = 14.sp,
             fontStyle = FontStyle.Italic,
