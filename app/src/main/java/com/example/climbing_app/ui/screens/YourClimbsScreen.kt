@@ -1,6 +1,5 @@
 package com.example.climbing_app.ui.screens
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -20,6 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
@@ -40,9 +41,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -93,6 +91,12 @@ fun YourClimbsList(
     // Get all climbs from the ViewModel
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
 
+    // Image painter resource for climbs with no uploaded photo
+    val placeholderPainter = painterResource(R.drawable.img_placeholder)
+
+    // Focus manager to remove focus from the search bar on search and on climb selection
+    val focusManager = LocalFocusManager.current
+
     // User input into search bar
     var query by rememberSaveable { mutableStateOf("") }
 
@@ -113,53 +117,52 @@ fun YourClimbsList(
         }
     }
 
-    // Focus manager to remove focus from the search bar on search and on climb selection
-    val focusManager = LocalFocusManager.current
-
-    // Image painter resource for climbs with no uploaded photo
-    val placeholderPainter = painterResource(R.drawable.img_placeholder)
-
-    Box(
-        modifier
-            .semantics { isTraversalGroup = true }
+    Column(
+        modifier = modifier
     ) {
         SearchBar(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .semantics { traversalIndex = 0f },
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             windowInsets = WindowInsets(top = 0.dp),
             inputField = {
                 SearchBarDefaults.InputField(
                     query = query,
                     onQueryChange = { query = it },
                     onSearch = { focusManager.clearFocus() },
-                    expanded = true,
+                    expanded = false,
                     onExpandedChange = {},
-                    placeholder = { Text("Search") },
-                    leadingIcon = { Icon(Icons.Default.Search, "Search") }
+                    placeholder = { Text("Name, grade or tag...") },
+                    leadingIcon = { Icon(Icons.Default.Search, "Search") },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(
+                                onClick = { query = "" }
+                            ) {
+                                Icon(Icons.Default.Clear, "Clear")
+                            }
+                        }
+                    }
                 )
             },
-            expanded = true,
+            expanded = false,
             onExpandedChange = {}
-        ) {
-            // Show 'no climbs' message if no climbs exist / match search
-            if (searchResults.isEmpty()) {
-                NoClimbsMessage(Modifier)
-            } else {
-                LazyColumn(
-                    Modifier.semantics { traversalIndex = 1f }
-                ){
-                    items(searchResults) {
-                        YourClimbsListItem(
-                            onClick = {
-                                focusManager.clearFocus()
-                                navController.navigate(route = AppScreens.Detail.name+"/${it.id}")
-                            },
-                            data = it,
-                            placeholder = placeholderPainter
-                        )
-                        HorizontalDivider(thickness = 2.dp)
-                    }
+        ) {}
+        // Show 'no climbs' message if no climbs exist / match search
+        if (searchResults.isEmpty()) {
+            NoClimbsMessage(Modifier)
+        } else {
+            LazyColumn {
+                items(searchResults) {
+                    YourClimbsListItem(
+                        onClick = {
+                            focusManager.clearFocus()
+                            navController.navigate(route = AppScreens.Detail.name+"/${it.id}")
+                        },
+                        data = it,
+                        placeholder = placeholderPainter
+                    )
+                    HorizontalDivider(thickness = 2.dp)
                 }
             }
         }
