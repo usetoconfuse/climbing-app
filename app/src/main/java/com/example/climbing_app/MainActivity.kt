@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
                             id ->
                             ClimbDetailsScreen(
                                 climbViewModel,
+                                navController,
                                 id = id.arguments?.getInt("id")
                             )
                         }

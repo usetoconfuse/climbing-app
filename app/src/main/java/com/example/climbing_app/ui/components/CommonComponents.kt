@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.climbing_app.data.ClimbTag
 import com.example.climbing_app.data.ClimbTagHolds
 import com.example.climbing_app.data.ClimbTagIncline
@@ -37,7 +39,7 @@ import com.example.climbing_app.data.ClimbTagStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ClimbingTopAppBar(title: String) {
+fun ClimbingMajorTopAppBar(title: String) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -53,6 +55,24 @@ fun ClimbingTopAppBar(title: String) {
         actions = {
             IconButton(onClick = { /* change theme */ }) {
                 Icon(Icons.Filled.Settings, "Change Theme")
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ClimbingMinorTopAppBar(title: String, navController: NavController) {
+    TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        title = {
+            Text(title)
+        },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
             }
         }
     )

@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
@@ -54,7 +55,7 @@ import com.example.climbing_app.AppScreens
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.ui.ClimbViewModel
-import com.example.climbing_app.ui.components.ClimbingTopAppBar
+import com.example.climbing_app.ui.components.ClimbingMajorTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
@@ -65,7 +66,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 
     Scaffold(
         topBar = {
-            ClimbingTopAppBar("Your Climbs")
+            ClimbingMajorTopAppBar("Your Climbs")
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -110,6 +111,9 @@ fun YourClimbsList(climbViewModel: ClimbViewModel, navController: NavController,
         }
     }
 
+    // Focus manager to remove focus from the search bar on search and on climb selection
+    val focusManager = LocalFocusManager.current
+
     // Image painter resource for climbs with no uploaded photo
     val placeholderPainter = painterResource(R.drawable.img_placeholder)
 
@@ -126,7 +130,7 @@ fun YourClimbsList(climbViewModel: ClimbViewModel, navController: NavController,
                 SearchBarDefaults.InputField(
                     query = query,
                     onQueryChange = { query = it },
-                    onSearch = { /* do something */ },
+                    onSearch = { focusManager.clearFocus() },
                     expanded = true,
                     onExpandedChange = {},
                     placeholder = { Text("Search") },
@@ -145,7 +149,10 @@ fun YourClimbsList(climbViewModel: ClimbViewModel, navController: NavController,
                 ){
                     items(searchResults) {
                         YourClimbsListItem(
-                            navController = navController,
+                            onClick = {
+                                focusManager.clearFocus()
+                                navController.navigate(route = AppScreens.Detail.name+"/${it.id}")
+                            },
                             data = it,
                             placeholder = placeholderPainter
                         )
@@ -158,9 +165,13 @@ fun YourClimbsList(climbViewModel: ClimbViewModel, navController: NavController,
 }
 
 @Composable
-fun YourClimbsListItem(navController: NavController, data: Climb, placeholder: Painter) {
+fun YourClimbsListItem(
+    onClick: () -> Unit,
+    data: Climb,
+    placeholder: Painter
+) {
     Card(
-        onClick = { navController.navigate(route = AppScreens.Detail.name+"/${data.id}") },
+        onClick = onClick,
         shape = RectangleShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background

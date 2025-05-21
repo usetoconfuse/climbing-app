@@ -29,18 +29,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.ui.ClimbViewModel
-import com.example.climbing_app.ui.components.ClimbingTopAppBar
+import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 
 
 @Composable
-fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, id: Int?) {
+fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, navController: NavController, id: Int?) {
 
     // Get all climbs from the ViewModel
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
@@ -50,7 +51,7 @@ fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, id: Int?) {
 
     Scaffold(
         topBar = {
-            ClimbingTopAppBar("Details")
+            ClimbingMinorTopAppBar(climb?.name ?: "Not Found", navController)
         },
     ) { innerPadding ->
         // Don't load the page if data wasn't retrieved
