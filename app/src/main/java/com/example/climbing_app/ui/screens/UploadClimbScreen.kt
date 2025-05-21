@@ -109,7 +109,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
     }
 
     // Prompt for camera permission when needed
-    val permissionLauncher = rememberLauncherForActivityResult(
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {
         if (it) {
@@ -127,7 +127,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
             cameraLauncher.launch(uri)
         } else {
             // Request a permission
-            permissionLauncher.launch(Manifest.permission.CAMERA)
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
