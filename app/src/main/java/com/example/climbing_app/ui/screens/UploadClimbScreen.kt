@@ -1,11 +1,7 @@
 package com.example.climbing_app.ui.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,8 +35,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -52,10 +46,7 @@ import com.example.climbing_app.data.ClimbTagStyle
 import com.example.climbing_app.data.ClimbTagType
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Objects
+import com.example.climbing_app.ui.prepareCamera
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,56 +83,10 @@ fun UploadClimbContent(
     var incline by rememberSaveable { mutableStateOf(ClimbTagIncline.Wall) }
     var capturedImageUri by rememberSaveable { mutableStateOf<Uri>(Uri.EMPTY) }
 
+    val takePhoto = context.prepareCamera { capturedImageUri = it }
+
     // Painter resource for image preview
     val previewPainter = rememberAsyncImagePainter(capturedImageUri)
-
-    // Create a file to store photo and get its URI
-    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
-    val timeStamp = LocalDateTime.now().format(formatter)
-    val imageFileName = "JPEG_" + timeStamp + "_"
-
-    val file = File.createTempFile(
-        imageFileName, // prefix
-        ".jpg", // suffix
-        context.externalCacheDir // directory
-    )
-
-    val uri = FileProvider.getUriForFile(
-        Objects.requireNonNull(context),
-        "${context.packageName}.provider",
-        file
-    )
-
-    // Use Intent to move to camera and store the captured photo at the given URI
-    val cameraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) {
-        // Don't replace previous image if the user backed out of the camera app
-        if (it) capturedImageUri = uri
-    }
-
-    // Prompt for camera permission when needed
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) {
-        if (it) {
-            cameraLauncher.launch(uri)
-        } else {
-            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // Take photo using intents
-    fun takePhoto() {
-        val permissionCheckResult =
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-            cameraLauncher.launch(uri)
-        } else {
-            // Request a permission
-            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
 
     // Upload
     fun uploadClimb() {
