@@ -66,7 +66,38 @@ import java.util.Objects
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                title = {
+                    Text("New Climb")
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    }
+                }
+            )
+        },
+        modifier = Modifier.fillMaxSize()
+    ) {innerPadding ->
+        UploadClimbContent(
+            climbViewModel = climbViewModel,
+            navController = navController,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
 
+@Composable
+fun UploadClimbContent(
+    climbViewModel: ClimbViewModel,
+    navController: NavController,
+    modifier: Modifier
+) {
     // Get context for toast
     val context = LocalContext.current
 
@@ -169,235 +200,215 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                title = {
-                    Text("New Climb")
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                    }
-                }
-            )
-        },
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
+                .fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
+            Column(
+                Modifier.weight(1.5f)
             ) {
-                Column(
-                    Modifier.weight(1.5f)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Name TextField
-                        OutlinedTextField(
-                            modifier = Modifier.weight(2.5f),
-                            label = { Text("Name") },
-                            singleLine = true,
-                            value = name,
-                            onValueChange = {
-                                name = it.take(30)
-                            }
-                        )
-                        // Add photo button
-                        FloatingActionButton(
-                            modifier = Modifier
-                                .padding(start = 8.dp, top = 12.dp)
-                                .weight(1.0f)
-                                .aspectRatio(1f),
-                            onClick = { takePhoto() }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.photo_camera),
-                                contentDescription = null
-                            )
+                    // Name TextField
+                    OutlinedTextField(
+                        modifier = Modifier.weight(2.5f),
+                        label = { Text("Name") },
+                        singleLine = true,
+                        value = name,
+                        onValueChange = {
+                            name = it.take(30)
                         }
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    // Add photo button
+                    FloatingActionButton(
+                        modifier = Modifier
+                            .padding(start = 8.dp, top = 12.dp)
+                            .weight(1.0f)
+                            .aspectRatio(1f),
+                        onClick = { takePhoto() }
                     ) {
-                        // Grade TextField
-                        OutlinedTextField(
-                            modifier = Modifier.weight(1.0f),
-                            label = { Text("V-grade") },
-                            singleLine = true,
-                            placeholder = { Text("0-17") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            value = grade,
-                            onValueChange = {
-                                if (it.isEmpty()) grade = it
-                                else if (it.isDigitsOnly()) {
-                                    val intVal = Integer.parseInt(it)
-                                    if (intVal < 0) grade = "0"
-                                    else if (intVal > 17) grade = "17"
-                                    else grade = intVal.toString()
-                                }
-                            }
-                        )
-                        // Rating TextField
-                        OutlinedTextField(
-                            modifier = Modifier.weight(1.0f),
-                            label = { Text("Rating") },
-                            singleLine = true,
-                            placeholder = { Text("0-3") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            value = rating,
-                            onValueChange = {
-                                if (it.isEmpty()) rating = it
-                                else if (it.isDigitsOnly()) {
-                                    val intVal = Integer.parseInt(it)
-                                    if (intVal < 0) rating = "0"
-                                    else if (intVal > 3) rating = "3"
-                                    else rating = intVal.toString()
-                                }
-                            }
+                        Icon(
+                            painter = painterResource(R.drawable.photo_camera),
+                            contentDescription = null
                         )
                     }
                 }
-                Image(
-                    // Show thumbnail if a photo has been taken, otherwise fallback to placeholder
-                    // BUG: image errors if you rotate the screen whilst in the camera app
-                    painter = if (capturedImageUri != Uri.EMPTY) previewPainter
-                              else painterResource(R.drawable.img_placeholder),
-                    contentDescription = "Picture",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .weight(1.0f)
-                        .padding(top = 8.dp, start = 16.dp)
-                        .aspectRatio(1f)
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    // Grade TextField
+                    OutlinedTextField(
+                        modifier = Modifier.weight(1.0f),
+                        label = { Text("V-grade") },
+                        singleLine = true,
+                        placeholder = { Text("0-17") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = grade,
+                        onValueChange = {
+                            if (it.isEmpty()) grade = it
+                            else if (it.isDigitsOnly()) {
+                                val intVal = Integer.parseInt(it)
+                                if (intVal < 0) grade = "0"
+                                else if (intVal > 17) grade = "17"
+                                else grade = intVal.toString()
+                            }
+                        }
+                    )
+                    // Rating TextField
+                    OutlinedTextField(
+                        modifier = Modifier.weight(1.0f),
+                        label = { Text("Rating") },
+                        singleLine = true,
+                        placeholder = { Text("0-3") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = rating,
+                        onValueChange = {
+                            if (it.isEmpty()) rating = it
+                            else if (it.isDigitsOnly()) {
+                                val intVal = Integer.parseInt(it)
+                                if (intVal < 0) rating = "0"
+                                else if (intVal > 3) rating = "3"
+                                else rating = intVal.toString()
+                            }
+                        }
+                    )
+                }
             }
-            // Description TextField
-            OutlinedTextField(
-                label = { Text("Description") },
+            Image(
+                // Show thumbnail if a photo has been taken, otherwise fallback to placeholder
+                // BUG: image errors if you rotate the screen whilst in the camera app
+                painter = if (capturedImageUri != Uri.EMPTY) previewPainter
+                else painterResource(R.drawable.img_placeholder),
+                contentDescription = "Picture",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                value = description,
-                onValueChange = {
-                    if (description.length <= 100) description = it
-                }
+                    .weight(1.0f)
+                    .padding(top = 8.dp, start = 16.dp)
+                    .aspectRatio(1f)
             )
+        }
+        // Description TextField
+        OutlinedTextField(
+            label = { Text("Description") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            value = description,
+            onValueChange = {
+                if (description.length <= 100) description = it
+            }
+        )
 
-            // Label and segmented button row for style tag
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(ClimbTagType.Style.imageResourceId),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = "Style",
-                    modifier = Modifier.padding(start = 6.dp)
+        // Label and segmented button row for style tag
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Icon(
+                painter = painterResource(ClimbTagType.Style.imageResourceId),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = "Style",
+                modifier = Modifier.padding(start = 6.dp)
+            )
+        }
+        SingleChoiceSegmentedButtonRow(
+            Modifier.fillMaxWidth()
+        ) {
+            ClimbTagStyle.entries.forEach { buttonStyle ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = buttonStyle.ordinal,
+                        count = ClimbTagStyle.entries.size
+                    ),
+                    onClick = { style = buttonStyle },
+                    selected = style == buttonStyle,
+                    icon = {},
+                    label = { Text(text = buttonStyle.name, fontSize = 11.sp) }
                 )
             }
-            SingleChoiceSegmentedButtonRow(
-                Modifier.fillMaxWidth()
-            ) {
-                ClimbTagStyle.entries.forEach { buttonStyle ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = buttonStyle.ordinal,
-                            count = ClimbTagStyle.entries.size
-                        ),
-                        onClick = { style = buttonStyle },
-                        selected = style == buttonStyle,
-                        icon = {},
-                        label = { Text(text = buttonStyle.name, fontSize = 11.sp) }
-                    )
-                }
-            }
+        }
 
-            // Label and segmented button row for holds tag
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(ClimbTagType.Holds.imageResourceId),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = "Holds",
-                    modifier = Modifier.padding(start = 6.dp)
+        // Label and segmented button row for holds tag
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Icon(
+                painter = painterResource(ClimbTagType.Holds.imageResourceId),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = "Holds",
+                modifier = Modifier.padding(start = 6.dp)
+            )
+        }
+        SingleChoiceSegmentedButtonRow(
+            Modifier.fillMaxWidth()
+        ) {
+            ClimbTagHolds.entries.forEach { buttonHolds ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = buttonHolds.ordinal,
+                        count = ClimbTagHolds.entries.size
+                    ),
+                    onClick = { holds = buttonHolds },
+                    selected = holds == buttonHolds,
+                    icon = {},
+                    label = { Text(text = buttonHolds.name, fontSize = 11.sp) }
                 )
             }
-            SingleChoiceSegmentedButtonRow(
-                Modifier.fillMaxWidth()
-            ) {
-                ClimbTagHolds.entries.forEach { buttonHolds ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = buttonHolds.ordinal,
-                            count = ClimbTagHolds.entries.size
-                        ),
-                        onClick = { holds = buttonHolds },
-                        selected = holds == buttonHolds,
-                        icon = {},
-                        label = { Text(text = buttonHolds.name, fontSize = 11.sp) }
-                    )
-                }
-            }
+        }
 
-            // Label and segmented button row for incline tag
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(ClimbTagType.Incline.imageResourceId),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = "Incline",
-                    modifier = Modifier.padding(start = 6.dp)
+        // Label and segmented button row for incline tag
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Icon(
+                painter = painterResource(ClimbTagType.Incline.imageResourceId),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = "Incline",
+                modifier = Modifier.padding(start = 6.dp)
+            )
+        }
+        SingleChoiceSegmentedButtonRow(
+            Modifier.fillMaxWidth()
+        ) {
+            ClimbTagIncline.entries.forEach { buttonIncline ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = buttonIncline.ordinal,
+                        count = ClimbTagIncline.entries.size
+                    ),
+                    onClick = { incline = buttonIncline },
+                    selected = incline == buttonIncline,
+                    icon = {},
+                    label = { Text(text = buttonIncline.name, fontSize = 11.sp) }
                 )
             }
-            SingleChoiceSegmentedButtonRow(
-                Modifier.fillMaxWidth()
-            ) {
-                ClimbTagIncline.entries.forEach { buttonIncline ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = buttonIncline.ordinal,
-                            count = ClimbTagIncline.entries.size
-                        ),
-                        onClick = { incline = buttonIncline },
-                        selected = incline == buttonIncline,
-                        icon = {},
-                        label = { Text(text = buttonIncline.name, fontSize = 11.sp) }
-                    )
-                }
-            }
+        }
 
-            // Upload button
-            Button(
-                modifier = Modifier.padding(top = 24.dp),
-                onClick = { uploadClimb() }
-            ) {
-                Text("UPLOAD")
-            }
+        // Upload button
+        Button(
+            modifier = Modifier.padding(top = 24.dp),
+            onClick = { uploadClimb() }
+        ) {
+            Text("UPLOAD")
         }
     }
 }
