@@ -223,7 +223,6 @@ fun YourClimbsListItem(
                     Text(
                         text = "by $uploader",
                         fontSize = 12.sp,
-                        fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(start = 10.dp)
                     )

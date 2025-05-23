@@ -57,6 +57,7 @@ fun ClimbDetailsScreen(
 
     // Find the data for climb we're viewing
     val user = userList.find{ user -> user.userId == userId }
+    if (user == null) return
     val climb = climbList.find{ climb -> climb.climbId == climbId }
     val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
 
@@ -72,6 +73,7 @@ fun ClimbDetailsScreen(
             ClimbDetailsContent(
                 modifier = Modifier.padding(innerPadding),
                 climb = climb,
+                uploader = user.username,
                 attempts = attempts
             )
         }
@@ -80,7 +82,12 @@ fun ClimbDetailsScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ClimbDetailsContent(modifier: Modifier, climb: Climb, attempts: List<Attempt>) {
+fun ClimbDetailsContent(
+    modifier: Modifier,
+    climb: Climb,
+    uploader: String,
+    attempts: List<Attempt>
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -122,7 +129,12 @@ fun ClimbDetailsContent(modifier: Modifier, climb: Climb, attempts: List<Attempt
                         )
                         RatingStars(
                             rating = climb.rating,
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.padding(top = 2.dp, end = 10.dp)
+                        )
+                        Text(
+                            text = "by $uploader",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     }
                     Text(
