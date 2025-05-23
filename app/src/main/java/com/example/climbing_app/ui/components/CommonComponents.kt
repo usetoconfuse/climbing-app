@@ -8,10 +8,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +40,7 @@ import com.example.climbing_app.data.ClimbTagStyle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClimbingMajorTopAppBar(title: String) {
-    TopAppBar(
+    CenterAlignedTopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
@@ -48,7 +49,10 @@ fun ClimbingMajorTopAppBar(title: String) {
         },
         navigationIcon = {
             IconButton(onClick = { /* go to login */ }) {
-                Icon(Icons.Default.AccountBox, "Logout")
+                Icon(Icons.AutoMirrored.Filled.ExitToApp,
+                    "Logout",
+                    modifier = Modifier.rotate(180.0f)
+                )
             }
         }
     )
