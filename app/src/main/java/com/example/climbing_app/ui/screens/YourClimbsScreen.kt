@@ -51,6 +51,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.climbing_app.AppScreens
 import com.example.climbing_app.R
+import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMajorTopAppBar
@@ -60,7 +61,9 @@ import com.example.climbing_app.ui.components.TagListRow
 
 
 @Composable
-fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
+fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController, userId: Int?) {
+    if (userId == null) return
+
     Scaffold(
         topBar = {
             ClimbingMajorTopAppBar("Your Climbs")
@@ -69,13 +72,14 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
             ExtendedFloatingActionButton(
                 text = { Text("NEW") },
                 icon = { Icon(Icons.Filled.Add, null) },
-                onClick = { navController.navigate(route = AppScreens.Upload.name) }
+                onClick = { navController.navigate(route = AppScreens.Upload.name+"/$userId") }
             )
         }
     ) { innerPadding ->
         YourClimbsList(
             climbViewModel = climbViewModel,
             navController = navController,
+            userId = userId,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -86,10 +90,13 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 fun YourClimbsList(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    modifier: Modifier) {
-
-    // Get all climbs from the ViewModel
+    userId: Int,
+    modifier: Modifier
+) {
+    // Get data from the ViewModel
+    val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
+    val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
 
     // Image painter resource for climbs with no uploaded photo
     val placeholderPainter = painterResource(R.drawable.img_placeholder)
@@ -157,9 +164,16 @@ fun YourClimbsList(
                     YourClimbsListItem(
                         onClick = {
                             focusManager.clearFocus()
-                            navController.navigate(route = AppScreens.Detail.name+"/${it.id}")
+                            navController.navigate(
+                                route = AppScreens.Detail.name+"/$userId/${it.climbId}"
+                            )
                         },
-                        data = it,
+                        climb = it,
+                        attempts = attemptList.filter({attempt ->
+                            attempt.climbId == it.climbId
+                                    && attempt.userId == userId
+                        }),
+                        uploader = userList.find{user -> user.userId == it.userId}?.username,
                         placeholder = placeholderPainter
                     )
                     HorizontalDivider(thickness = 2.dp)
@@ -172,7 +186,9 @@ fun YourClimbsList(
 @Composable
 fun YourClimbsListItem(
     onClick: () -> Unit,
-    data: Climb,
+    climb: Climb,
+    attempts: List<Attempt>,
+    uploader: String?, // TODO use this
     placeholder: Painter
 ) {
     Card(
@@ -186,7 +202,7 @@ fun YourClimbsListItem(
             Modifier.padding(10.dp)
         ) {
             AsyncImage(
-                model = data.imageUri.toUri(),
+                model = climb.imageUri.toUri(),
                 placeholder = placeholder,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
@@ -201,34 +217,34 @@ fun YourClimbsListItem(
             ) {
                 Row {
                     Text(
-                        text = data.name,
+                        text = climb.name,
                         fontSize = 14.sp
                     )
                     Spacer(Modifier.weight(1.0f))
-                    CompletionStatusIcon(data.isComplete)
+                    CompletionStatusIcon(climb.isComplete)
                 }
                 Row {
                     Text(
-                        text = data.grade,
+                        text = climb.grade,
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary
                     )
                     RatingStars(
-                        rating = data.rating,
+                        rating = climb.rating,
                         modifier = Modifier.padding(start = 6.dp, top = 2.dp)
                     )
                     Spacer(Modifier.weight(1.0f))
                     Text(
-                        text = "${data.attempts} attempts",
+                        text = "${attempts.size} attempts",
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
                 TagListRow(
-                    style = data.style,
-                    holds = data.holds,
-                    incline = data.incline,
+                    style = climb.style,
+                    holds = climb.holds,
+                    incline = climb.incline,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp)

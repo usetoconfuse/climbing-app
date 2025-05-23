@@ -8,10 +8,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,13 +47,8 @@ fun ClimbingMajorTopAppBar(title: String) {
             Text(title)
         },
         navigationIcon = {
-            IconButton(onClick = { /* open nav drawer */ }) {
-                Icon(Icons.Filled.Menu, "Menu")
-            }
-        },
-        actions = {
-            IconButton(onClick = { /* change theme */ }) {
-                Icon(Icons.Filled.Settings, "Change Theme")
+            IconButton(onClick = { /* go to login */ }) {
+                Icon(Icons.Default.AccountBox, "Logout")
             }
         }
     )

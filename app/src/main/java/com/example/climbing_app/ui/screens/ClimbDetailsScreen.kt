@@ -32,6 +32,7 @@ import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.climbing_app.R
+import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
@@ -41,13 +42,23 @@ import com.example.climbing_app.ui.components.TagListRow
 
 
 @Composable
-fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, navController: NavController, id: Int?) {
+fun ClimbDetailsScreen(
+    climbViewModel: ClimbViewModel,
+    navController: NavController,
+    userId: Int?,
+    climbId: Int?
+) {
+    if (userId == null) return
 
-    // Get all climbs from the ViewModel
+    // Get data from the ViewModel
+    val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
+    val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
 
-    // Find the climb we're viewing
-    val climb = climbList.find{ climb -> climb.id == id }
+    // Find the data for climb we're viewing
+    val user = userList.find{ user -> user.userId == userId }
+    val climb = climbList.find{ climb -> climb.climbId == climbId }
+    val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
 
     Scaffold(
         topBar = {
@@ -60,7 +71,8 @@ fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, navController: NavControl
         } else {
             ClimbDetailsContent(
                 modifier = Modifier.padding(innerPadding),
-                data = climb
+                climb = climb,
+                attempts = attempts
             )
         }
     }
@@ -68,7 +80,7 @@ fun ClimbDetailsScreen(climbViewModel: ClimbViewModel, navController: NavControl
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ClimbDetailsContent(modifier: Modifier, data: Climb) {
+fun ClimbDetailsContent(modifier: Modifier, climb: Climb, attempts: List<Attempt>) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -79,7 +91,7 @@ fun ClimbDetailsContent(modifier: Modifier, data: Climb) {
             Modifier.padding(start = 16.dp, end = 16.dp)
         ) {
             AsyncImage(
-                model = data.imageUri.toUri(),
+                model = climb.imageUri.toUri(),
                 placeholder = painterResource(R.drawable.img_placeholder),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
@@ -98,23 +110,23 @@ fun ClimbDetailsContent(modifier: Modifier, data: Climb) {
                 ) {
                     FlowRow {
                         Text(
-                            text = data.name,
+                            text = climb.name,
                             fontSize = 20.sp,
                             modifier = Modifier.padding(end = 10.dp)
                         )
                         Text(
-                            text = data.grade,
+                            text = climb.grade,
                             fontSize = 20.sp,
                             color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.padding(end = 10.dp)
                         )
                         RatingStars(
-                            rating = data.rating,
+                            rating = climb.rating,
                             modifier = Modifier.padding(top = 2.dp)
                         )
                     }
                     Text(
-                        text = "uploaded on ${data.formattedUploadDate()} at ${data.formattedUploadTime()}",
+                        text = "uploaded on ${climb.formattedUploadDate()} at ${climb.formattedUploadTime()}",
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary,
@@ -125,9 +137,9 @@ fun ClimbDetailsContent(modifier: Modifier, data: Climb) {
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.weight(2.0f)
                 ) {
-                    CompletionStatusLabel(data.isComplete)
+                    CompletionStatusLabel(climb.isComplete)
                     Text(
-                        text = "${data.attempts} attempts",
+                        text = "${attempts.size} attempts",
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary,
@@ -136,14 +148,14 @@ fun ClimbDetailsContent(modifier: Modifier, data: Climb) {
                 }
             }
             Text(
-                text = data.description,
+                text = climb.description,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(start = 2.dp)
             )
             TagListRow(
-                style = data.style,
-                holds = data.holds,
-                incline = data.incline,
+                style = climb.style,
+                holds = climb.holds,
+                incline = climb.incline,
                 modifier = Modifier
                     .width(250.dp)
                     .padding(top = 10.dp)

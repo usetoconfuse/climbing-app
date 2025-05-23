@@ -6,7 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 
-@Database (entities = [Climb::class], version = 1, exportSchema = false)
+@Database (
+    entities = [
+        User::class, Climb::class, Attempt::class
+               ],
+    version = 1,
+    exportSchema = false
+)
 abstract class ClimbDatabase:RoomDatabase() {
     abstract fun climbDao(): ClimbDao
     companion object {

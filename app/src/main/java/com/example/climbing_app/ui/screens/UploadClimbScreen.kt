@@ -51,7 +51,13 @@ import com.example.climbing_app.ui.prepareCamera
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavController) {
+fun UploadClimbScreen(
+    climbViewModel: ClimbViewModel,
+    navController: NavController,
+    userId: Int?
+) {
+    if (userId == null) return
+
     Scaffold(
         topBar = { ClimbingMinorTopAppBar("New Climb", navController) },
         modifier = Modifier.fillMaxSize()
@@ -59,6 +65,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
         UploadClimbContent(
             climbViewModel = climbViewModel,
             navController = navController,
+            userId = userId,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -68,6 +75,7 @@ fun UploadClimbScreen(climbViewModel: ClimbViewModel, navController: NavControll
 fun UploadClimbContent(
     climbViewModel: ClimbViewModel,
     navController: NavController,
+    userId: Int,
     modifier: Modifier
 ) {
     // Get context for toast
@@ -101,6 +109,7 @@ fun UploadClimbContent(
         else {
             // Upload the climb
             val newClimb = Climb(
+                userId = userId,
                 name = name,
                 imageUri = if (capturedImageUri.path?.isNotEmpty() == true){
                     capturedImageUri.toString()
@@ -116,7 +125,7 @@ fun UploadClimbContent(
                 incline = incline
             )
 
-            climbViewModel.insert(newClimb)
+            climbViewModel.insertClimb(newClimb)
             Toast.makeText(
                 context,
                 "${newClimb.name} uploaded successfully",
@@ -229,7 +238,7 @@ fun UploadClimbContent(
                 .padding(top = 8.dp),
             value = description,
             onValueChange = {
-                if (description.length <= 100) description = it
+                description = it.take(100)
             }
         )
 

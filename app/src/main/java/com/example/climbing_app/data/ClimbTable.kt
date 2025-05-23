@@ -1,20 +1,32 @@
 package com.example.climbing_app.data
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-@Entity (tableName = "climbs")
-data class Climb (
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+@Entity (
+    tableName = "climbs",
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class,
+            parentColumns = arrayOf("userId"),
+            childColumns = arrayOf("userId"),
+            onUpdate = ForeignKey.CASCADE,
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class Climb(
+    @PrimaryKey(autoGenerate = true) val climbId: Int = 0,
+    val userId: Int,
     val name: String,
     val imageUri: String,
     val grade: String,
     val rating: Int = 0,
     val description: String,
-    val attempts: Int = 0,
     val isComplete: Boolean = false,
     val uploadDate: String = LocalDateTime.now().toString(),
     val style: ClimbTagStyle,
