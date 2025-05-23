@@ -29,5 +29,6 @@ data class Attempt(
     @PrimaryKey(autoGenerate = true) val attemptId: Int = 0,
     val userId: Int,
     val climbId: Int,
+    val completed: Boolean,
     val date: String = LocalDateTime.now().toString()
 )

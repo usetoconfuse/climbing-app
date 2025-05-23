@@ -111,7 +111,8 @@ fun ClimbDetailsScreen(
                                 onClick = {
                                     val newAttempt = Attempt(
                                         userId = user.userId,
-                                        climbId = climb.climbId
+                                        climbId = climb.climbId,
+                                        completed = false
                                     )
 
                                     climbViewModel.insertAttempt(newAttempt)
@@ -228,7 +229,7 @@ fun ClimbDetailsContent(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.weight(2.0f)
                 ) {
-                    CompletionStatusLabel(climb.isComplete)
+                    CompletionStatusLabel((attempts.find{attempt -> attempt.completed}) != null)
                     Text(
                         text = "${attempts.size} attempts",
                         fontSize = 12.sp,

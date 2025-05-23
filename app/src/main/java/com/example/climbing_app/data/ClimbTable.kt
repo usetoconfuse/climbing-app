@@ -27,7 +27,6 @@ data class Climb(
     val grade: String,
     val rating: Int = 0,
     val description: String,
-    val isComplete: Boolean = false,
     val uploadDate: String = LocalDateTime.now().toString(),
     val style: ClimbTagStyle,
     val holds: ClimbTagHolds,

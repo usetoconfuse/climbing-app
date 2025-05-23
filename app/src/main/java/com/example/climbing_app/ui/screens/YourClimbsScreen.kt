@@ -227,7 +227,7 @@ fun YourClimbsListItem(
                         modifier = Modifier.padding(start = 10.dp)
                     )
                     Spacer(Modifier.weight(1.0f))
-                    CompletionStatusIcon(climb.isComplete)
+                    CompletionStatusIcon((attempts.find{attempt -> attempt.completed}) != null)
                 }
                 Row {
                     Text(
