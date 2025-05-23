@@ -1,5 +1,6 @@
 package com.example.climbing_app.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -81,46 +82,54 @@ fun ClimbDetailsScreen(
     val climb = climbList.find{ climb -> climb.climbId == climbId }
     val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
 
-    BasicAlertDialog(
-        onDismissRequest = {
-            openDialog = false
-        }
-    ) {
-        Surface(
-            modifier = Modifier.wrapContentWidth().wrapContentHeight(),
-            shape = MaterialTheme.shapes.large,
-            tonalElevation = AlertDialogDefaults.TonalElevation
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text =
-                        "This area typically contains the supportive text " +
-                                "which presents the details regarding the Dialog's purpose.",
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                TextButton(
-                    onClick = { openDialog = false },
-                    modifier = Modifier.align(Alignment.End)
+    when {
+        openDialog && climb != null -> {
+            BasicAlertDialog(
+                onDismissRequest = {
+                    openDialog = false
+                }
+            ) {
+                Surface(
+                    modifier = Modifier.wrapContentWidth().wrapContentHeight(),
+                    shape = MaterialTheme.shapes.large,
+                    tonalElevation = AlertDialogDefaults.TonalElevation
                 ) {
-                    Text("Confirm")
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Log an attempt for ${climb.name}?",
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Row(
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            TextButton(
+                                onClick = { openDialog = false }
+                            ) {
+                                Text("Cancel")
+                            }
+                            TextButton(
+                                onClick = {
+                                    val newAttempt = Attempt(
+                                        userId = user.userId,
+                                        climbId = climb.climbId
+                                    )
+
+                                    climbViewModel.insertAttempt(newAttempt)
+                                    Toast.makeText(
+                                        context,
+                                        "Attempt logged",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    openDialog = false
+                                },
+                            ) {
+                                Text("Confirm")
+                            }
+                        }
+                    }
                 }
             }
-
-            /*
-            if (climb != null) {
-                        val newAttempt = Attempt(
-                            userId = user.userId,
-                            climbId = climb.climbId
-                        )
-
-                        climbViewModel.insertAttempt(newAttempt)
-                        Toast.makeText(
-                            context,
-                            "Attempt logged",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-             */
         }
     }
 
