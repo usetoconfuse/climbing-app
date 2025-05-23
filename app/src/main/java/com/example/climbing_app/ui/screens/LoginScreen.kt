@@ -1,7 +1,9 @@
 package com.example.climbing_app.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
 import com.example.climbing_app.data.User
@@ -31,7 +34,10 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
-            Modifier.padding(innerPadding)
+            Modifier
+                .padding(innerPadding)
+                .padding(24.dp)
+                .padding(top = 48.dp)
         ) {
             val context = LocalContext.current
 
@@ -81,13 +87,18 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                 }
             }
 
+            Text(
+                text = "Login / Register",
+                fontSize = 32.sp
+            )
+
             // Username TextField
             OutlinedTextField(
                 label = { Text("Username") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 24.dp),
                 value = username,
                 onValueChange = {
                     username = it.take(15)
@@ -108,20 +119,25 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                 }
             )
 
-            // Upload button
-            Button(
-                modifier = Modifier.padding(top = 24.dp),
-                onClick = { authenticateLogin() }
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
             ) {
-                Text("LOGIN")
-            }
+                // Upload button
+                Button(
+                    onClick = { authenticateLogin() }
+                ) {
+                    Text("LOGIN")
+                }
 
-            // New user
-            Button(
-                modifier = Modifier.padding(top = 24.dp),
-                onClick = { addUser() }
-            ) {
-                Text("ADD USER")
+                // New user
+                Button(
+                    onClick = { addUser() }
+                ) {
+                    Text("REGISTER")
+                }
             }
         }
     }
