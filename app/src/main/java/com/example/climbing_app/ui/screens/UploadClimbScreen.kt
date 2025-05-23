@@ -158,7 +158,7 @@ fun UploadClimbContent(
                         singleLine = true,
                         value = name,
                         onValueChange = {
-                            name = it.take(30)
+                            name = it.take(20)
                         }
                     )
                     // Add photo button

@@ -220,6 +220,13 @@ fun YourClimbsListItem(
                         text = climb.name,
                         fontSize = 14.sp
                     )
+                    Text(
+                        text = "by $uploader",
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
                     Spacer(Modifier.weight(1.0f))
                     CompletionStatusIcon(climb.isComplete)
                 }
@@ -233,15 +240,7 @@ fun YourClimbsListItem(
                         rating = climb.rating,
                         modifier = Modifier.padding(start = 6.dp, top = 2.dp)
                     )
-                    Spacer(Modifier.weight(1.0f))
-                    Text(
-                        text = "by $uploader",
-                        fontSize = 12.sp,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(start = 6.dp)
-                    )
-                    Spacer(Modifier.weight(1.0f))
+                    Spacer(modifier = Modifier.weight(1.0f))
                     Text(
                         text = "${attempts.size} attempts",
                         fontSize = 12.sp,
