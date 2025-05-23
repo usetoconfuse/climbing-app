@@ -3,6 +3,7 @@ package com.example.climbing_app.data
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import java.time.LocalDateTime
 
 
 @Entity (
@@ -28,5 +29,5 @@ data class Attempt(
     @PrimaryKey(autoGenerate = true) val attemptId: Int = 0,
     val userId: Int,
     val climbId: Int,
-    val date: String
+    val date: String = LocalDateTime.now().toString()
 )
