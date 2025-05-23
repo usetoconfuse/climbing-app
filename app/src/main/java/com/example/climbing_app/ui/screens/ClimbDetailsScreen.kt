@@ -1,12 +1,15 @@
 package com.example.climbing_app.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,11 +19,13 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +41,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -55,6 +62,7 @@ import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +77,7 @@ fun ClimbDetailsScreen(
 
     val context = LocalContext.current
 
-    var openDialog by rememberSaveable { mutableStateOf(false) }
+    var openDialogType by rememberSaveable { mutableStateOf("") }
 
     // Get data from the ViewModel
     val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
@@ -82,11 +90,19 @@ fun ClimbDetailsScreen(
     val climb = climbList.find{ climb -> climb.climbId == climbId }
     val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
 
+    val capitalizeFirst: (String) -> String = { str ->
+        str.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(
+                Locale.getDefault()
+            ) else it.toString()
+        }
+    }
+
     when {
-        openDialog && climb != null -> {
+        openDialogType.isNotEmpty() && climb != null -> {
             BasicAlertDialog(
                 onDismissRequest = {
-                    openDialog = false
+                    openDialogType = ""
                 }
             ) {
                 Surface(
@@ -96,14 +112,14 @@ fun ClimbDetailsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Log an attempt for ${climb.name}?",
+                            text = "Log $openDialogType for ${climb.name}?",
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Row(
                             modifier = Modifier.align(Alignment.End)
                         ) {
                             TextButton(
-                                onClick = { openDialog = false }
+                                onClick = { openDialogType = "" }
                             ) {
                                 Text("Cancel")
                             }
@@ -112,17 +128,17 @@ fun ClimbDetailsScreen(
                                     val newAttempt = Attempt(
                                         userId = user.userId,
                                         climbId = climb.climbId,
-                                        completed = false
+                                        completed = openDialogType == "send"
                                     )
 
                                     climbViewModel.insertAttempt(newAttempt)
                                     Toast.makeText(
                                         context,
-                                        "Attempt logged",
+                                        "${capitalizeFirst(openDialogType)} logged for ${climb.name}",
                                         Toast.LENGTH_SHORT
                                     ).show()
 
-                                    openDialog = false
+                                    openDialogType = ""
                                 },
                             ) {
                                 Text("Confirm")
@@ -138,24 +154,68 @@ fun ClimbDetailsScreen(
         topBar = {
             ClimbingMinorTopAppBar(climb?.name ?: "Not Found", navController)
         },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = { Text("LOG ATTEMPT") },
-                icon = { Icon(Icons.Filled.Add, null) },
-                onClick = { openDialog = true }
-            )
-        }
+        modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         // Don't load the page if data wasn't retrieved
         if (climb == null) {
             ClimbNotFoundMessage(Modifier.padding(innerPadding))
         } else {
-            ClimbDetailsContent(
-                modifier = Modifier.padding(innerPadding),
-                climb = climb,
-                uploader = user.username,
-                attempts = attempts
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                ClimbDetailsContent(
+                    climb = climb,
+                    uploader = user.username,
+                    attempts = attempts
+                )
+                Row (
+                    modifier = Modifier
+                        .height(72.dp)
+                ) {
+                    Button(
+                        onClick = { openDialogType = "attempt" },
+                        shape = RectangleShape,
+                        modifier = Modifier
+                            .weight(1.0f)
+                            .fillMaxSize()
+                    ) {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = null
+                            )
+                            Text(
+                                text = "LOG ATTEMPT",
+                                modifier = Modifier.padding(top = 2.dp, start = 6.dp)
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = { openDialogType = "send" },
+                        shape = RectangleShape,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78A55A)),
+                        modifier = Modifier
+                            .weight(1.0f)
+                            .fillMaxSize()
+                    ) {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                            Text(
+                                text = "LOG SEND",
+                                color = Color.White,
+                                modifier = Modifier.padding(top = 2.dp, start = 6.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -163,14 +223,12 @@ fun ClimbDetailsScreen(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ClimbDetailsContent(
-    modifier: Modifier,
     climb: Climb,
     uploader: String,
     attempts: List<Attempt>
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = Modifier
             .padding(top = 16.dp)
     ) {
         // Climb info
@@ -262,7 +320,7 @@ fun ClimbDetailsContent(
             color = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.padding(top = 8.dp, start = 18.dp)
         )
-        /* Activity list component */
+        // TODO Activity list component
     }
 }
 
