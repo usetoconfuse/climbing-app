@@ -351,7 +351,7 @@ fun AttemptHistoryList(attempts: List<Attempt>, users: List<User>) {
 @Composable
 fun AttemptHistoryItem(attempt: Attempt, user: String) {
     Row(
-        Modifier.padding(4.dp)
+        Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
     ) {
         CompletionStatusIcon(attempt.completed)
         Text(
@@ -362,8 +362,7 @@ fun AttemptHistoryItem(attempt: Attempt, user: String) {
         Text(
             text = "${attempt.formattedUploadTime()}    ${attempt.formattedUploadDate()}",
             fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(end = 10.dp)
+            color = MaterialTheme.colorScheme.secondary
         )
     }
     HorizontalDivider(thickness = 2.dp)
