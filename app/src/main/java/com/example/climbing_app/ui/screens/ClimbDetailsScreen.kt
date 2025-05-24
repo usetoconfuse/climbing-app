@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -159,6 +160,50 @@ fun ClimbDetailsScreen(
         topBar = {
             ClimbingMinorTopAppBar(climb?.name ?: "Not Found", navController)
         },
+        bottomBar = {
+            // Bottom log buttons
+            BottomAppBar {
+                Button(
+                    onClick = { openDialogType = "attempt" },
+                    modifier = Modifier
+                        .weight(1.0f)
+                        .fillMaxSize()
+                        .padding(vertical = 8.dp, horizontal = 1.dp)
+                ) {
+                    Row {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = null
+                        )
+                        Text(
+                            text = "LOG ATTEMPT",
+                            modifier = Modifier.padding(top = 2.dp, start = 6.dp)
+                        )
+                    }
+                }
+                Button(
+                    onClick = { openDialogType = "send" },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78A55A)),
+                    modifier = Modifier
+                        .weight(1.0f)
+                        .fillMaxSize()
+                        .padding(vertical = 8.dp, horizontal = 1.dp)
+                ) {
+                    Row {
+                        Icon(
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                        Text(
+                            text = "LOG SEND",
+                            color = Color.White,
+                            modifier = Modifier.padding(top = 2.dp, start = 6.dp)
+                        )
+                    }
+                }
+            }
+        },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         // Don't load the page if data wasn't retrieved
@@ -180,52 +225,6 @@ fun ClimbDetailsScreen(
                     attempts = attempts,
                     users = userList
                 )
-
-                // Bottom log buttons
-                Row (
-                    modifier = Modifier
-                        .height(72.dp)
-                ) {
-                    Button(
-                        onClick = { openDialogType = "attempt" },
-                        shape = RectangleShape,
-                        modifier = Modifier
-                            .weight(1.0f)
-                            .fillMaxSize()
-                    ) {
-                        Row {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = null
-                            )
-                            Text(
-                                text = "LOG ATTEMPT",
-                                modifier = Modifier.padding(top = 2.dp, start = 6.dp)
-                            )
-                        }
-                    }
-                    Button(
-                        onClick = { openDialogType = "send" },
-                        shape = RectangleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78A55A)),
-                        modifier = Modifier
-                            .weight(1.0f)
-                            .fillMaxSize()
-                    ) {
-                        Row {
-                            Icon(
-                                imageVector = Icons.Filled.CheckCircle,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                            Text(
-                                text = "LOG SEND",
-                                color = Color.White,
-                                modifier = Modifier.padding(top = 2.dp, start = 6.dp)
-                            )
-                        }
-                    }
-                }
             }
         }
     }
@@ -357,8 +356,15 @@ fun AttemptHistoryItem(attempt: Attempt, user: String) {
     ) {
         CompletionStatusIcon(attempt.completed)
         Text(
-            text = "$user at ${attempt.formattedUploadTime()} on ${attempt.formattedUploadDate()}",
+            text = user,
             modifier = Modifier.padding(start = 10.dp)
+        )
+        Spacer(Modifier.weight(1.0f))
+        Text(
+            text = "${attempt.formattedUploadTime()}    ${attempt.formattedUploadDate()}",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(end = 10.dp)
         )
     }
     HorizontalDivider(thickness = 2.dp)
