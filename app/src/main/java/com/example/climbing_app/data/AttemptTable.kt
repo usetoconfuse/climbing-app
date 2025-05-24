@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 @Entity (
@@ -31,4 +32,15 @@ data class Attempt(
     val climbId: Int,
     val completed: Boolean,
     val date: String = LocalDateTime.now().toString()
-)
+) {
+    // Get the formatted upload date
+    fun formattedUploadDate(): String {
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        return LocalDateTime.parse(this.date).format(formatter)
+    }
+    // Get the formatted upload time
+    fun formattedUploadTime(): String {
+        val formatter = DateTimeFormatter.ofPattern("HH:mm")
+        return LocalDateTime.parse(this.date).format(formatter)
+    }
+}

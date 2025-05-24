@@ -39,7 +39,7 @@ interface ClimbDao {
     suspend fun updateAttempt(attempt: Attempt)
     @Delete(entity = Attempt::class)
     suspend fun deleteAttempt(attempt: Attempt)
-    @Query("SELECT * FROM attempts")
+    @Query("SELECT * FROM attempts ORDER BY date DESC")
     fun getAllAttempts(): LiveData<List<Attempt>>
 
     // Queries

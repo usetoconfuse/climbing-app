@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -57,8 +59,10 @@ import coil.compose.AsyncImage
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
+import com.example.climbing_app.data.User
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
+import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.CompletionStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
@@ -89,6 +93,7 @@ fun ClimbDetailsScreen(
     if (user == null) return
     val climb = climbList.find{ climb -> climb.climbId == climbId }
     val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
+    val userAttempts = attempts.filter { attempt -> attempt.userId == user.userId }
 
     val capitalizeFirst: (String) -> String = { str ->
         str.replaceFirstChar {
@@ -166,11 +171,17 @@ fun ClimbDetailsScreen(
                     .padding(innerPadding),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
+                // Main screen content
                 ClimbDetailsContent(
                     climb = climb,
-                    uploader = user.username,
-                    attempts = attempts
+                    uploader = userList.find{user -> user.userId == climb.userId}?.username
+                                            ?: "unknown",
+                    userAttempts = userAttempts,
+                    attempts = attempts,
+                    users = userList
                 )
+
+                // Bottom log buttons
                 Row (
                     modifier = Modifier
                         .height(72.dp)
@@ -225,7 +236,9 @@ fun ClimbDetailsScreen(
 fun ClimbDetailsContent(
     climb: Climb,
     uploader: String,
-    attempts: List<Attempt>
+    userAttempts: List<Attempt>,
+    attempts: List<Attempt>,
+    users: List<User>
 ) {
     Column(
         modifier = Modifier
@@ -287,9 +300,9 @@ fun ClimbDetailsContent(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.weight(2.0f)
                 ) {
-                    CompletionStatusLabel((attempts.find{attempt -> attempt.completed}) != null)
+                    CompletionStatusLabel((userAttempts.find{attempt -> attempt.completed}) != null)
                     Text(
-                        text = "${attempts.size} attempts",
+                        text = "${userAttempts.size} attempts",
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary,
@@ -318,10 +331,37 @@ fun ClimbDetailsContent(
         Text(
             text = "History",
             color = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier.padding(top = 8.dp, start = 18.dp)
+            modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp)
         )
-        // TODO Activity list component
+        AttemptHistoryList(attempts, users)
     }
+}
+
+// Climb attempt history column
+@Composable
+fun AttemptHistoryList(attempts: List<Attempt>, users: List<User>) {
+    LazyColumn {
+        items(attempts) {
+            val attemptedUser = users.find{user -> user.userId == it.userId}
+            if (attemptedUser != null) {
+                AttemptHistoryItem(it, attemptedUser.username)
+            }
+        }
+    }
+}
+
+@Composable
+fun AttemptHistoryItem(attempt: Attempt, user: String) {
+    Row(
+        Modifier.padding(4.dp)
+    ) {
+        CompletionStatusIcon(attempt.completed)
+        Text(
+            text = "$user at ${attempt.formattedUploadTime()} on ${attempt.formattedUploadDate()}",
+            modifier = Modifier.padding(start = 10.dp)
+        )
+    }
+    HorizontalDivider(thickness = 2.dp)
 }
 
 @Composable
