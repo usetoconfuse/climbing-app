@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -26,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -36,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -54,19 +58,34 @@ import com.example.climbing_app.R
 import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.ui.ClimbViewModel
-import com.example.climbing_app.ui.components.ClimbingMajorTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController, userId: Int?) {
+fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController, userId: Int?) {
     if (userId == null) return
 
     Scaffold(
         topBar = {
-            ClimbingMajorTopAppBar("Your Climbs")
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                title = {
+                    Text("All Climbs")
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp,
+                            "Logout",
+                            modifier = Modifier.rotate(180.0f)
+                        )
+                    }
+                }
+            )
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -76,7 +95,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
             )
         }
     ) { innerPadding ->
-        YourClimbsList(
+        ClimbsList(
             climbViewModel = climbViewModel,
             navController = navController,
             userId = userId,
@@ -87,7 +106,7 @@ fun YourClimbsScreen(climbViewModel: ClimbViewModel, navController: NavControlle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun YourClimbsList(
+fun ClimbsList(
     climbViewModel: ClimbViewModel,
     navController: NavController,
     userId: Int,
@@ -161,7 +180,7 @@ fun YourClimbsList(
         } else {
             LazyColumn {
                 items(searchResults) {
-                    YourClimbsListItem(
+                    ClimbsListItem(
                         onClick = {
                             focusManager.clearFocus()
                             navController.navigate(
@@ -184,7 +203,7 @@ fun YourClimbsList(
 }
 
 @Composable
-fun YourClimbsListItem(
+fun ClimbsListItem(
     onClick: () -> Unit,
     climb: Climb,
     attempts: List<Attempt>,

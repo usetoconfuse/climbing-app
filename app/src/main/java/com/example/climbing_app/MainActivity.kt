@@ -16,10 +16,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.climbing_app.ui.ClimbViewModel
+import com.example.climbing_app.ui.screens.AllClimbsScreen
 import com.example.climbing_app.ui.screens.ClimbDetailsScreen
 import com.example.climbing_app.ui.screens.LoginScreen
 import com.example.climbing_app.ui.screens.UploadClimbScreen
-import com.example.climbing_app.ui.screens.YourClimbsScreen
 import com.example.climbing_app.ui.theme.ClimbingappTheme
 
 
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         ) {index ->
-                            YourClimbsScreen(
+                            AllClimbsScreen(
                                 climbViewModel,
                                 navController,
                                 userId = index.arguments?.getInt("user"))
