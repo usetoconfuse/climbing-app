@@ -47,16 +47,18 @@ import com.example.climbing_app.data.ClimbTagType
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.prepareCamera
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadClimbScreen(
     climbViewModel: ClimbViewModel,
-    navController: NavController,
-    userId: Int?
+    navController: NavController
 ) {
-    if (userId == null) return
+    val auth = Firebase.auth
+    val user = auth.currentUser ?: return
 
     Scaffold(
         topBar = { ClimbingMinorTopAppBar("New Climb", navController) },
@@ -65,7 +67,7 @@ fun UploadClimbScreen(
         UploadClimbContent(
             climbViewModel = climbViewModel,
             navController = navController,
-            userId = userId,
+            userId = 1, // FIXME hardcoded
             modifier = Modifier.padding(innerPadding)
         )
     }

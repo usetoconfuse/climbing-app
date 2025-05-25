@@ -66,6 +66,8 @@ import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.CompletionStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import java.util.Locale
 
 
@@ -74,10 +76,10 @@ import java.util.Locale
 fun ClimbDetailsScreen(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    userId: Int?,
     climbId: Int?
 ) {
-    if (userId == null) return
+    val auth = Firebase.auth
+    val user = auth.currentUser ?: return
 
     val context = LocalContext.current
 
@@ -89,11 +91,9 @@ fun ClimbDetailsScreen(
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
 
     // Find the data for climb we're viewing
-    val user = userList.find{ user -> user.userId == userId }
-    if (user == null) return
     val climb = climbList.find{ climb -> climb.climbId == climbId }
     val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
-    val userAttempts = attempts.filter { attempt -> attempt.userId == user.userId }
+    val userAttempts = attempts.filter { attempt -> attempt.userId == 1 } // FIXME hardcoded
 
     val capitalizeFirst: (String) -> String = { str ->
         str.replaceFirstChar {
@@ -131,7 +131,7 @@ fun ClimbDetailsScreen(
                             TextButton(
                                 onClick = {
                                     val newAttempt = Attempt(
-                                        userId = user.userId,
+                                        userId = 1, // FIXME hardcoded
                                         climbId = climb.climbId,
                                         completed = openDialogType == "send"
                                     )

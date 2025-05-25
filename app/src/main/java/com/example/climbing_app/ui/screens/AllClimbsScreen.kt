@@ -61,12 +61,15 @@ import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController, userId: Int?) {
-    if (userId == null) return
+fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
+    val auth = Firebase.auth
+    val user = auth.currentUser ?: return
 
     Scaffold(
         topBar = {
@@ -78,7 +81,12 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
                     Text("All Climbs")
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = {
+                            Firebase.auth.signOut()
+                            navController.navigate(AppScreens.Login.name)
+                        }
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp,
                             "Logout",
                             modifier = Modifier.rotate(180.0f)
@@ -91,14 +99,13 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
             ExtendedFloatingActionButton(
                 text = { Text("NEW") },
                 icon = { Icon(Icons.Filled.Add, null) },
-                onClick = { navController.navigate(route = AppScreens.Upload.name+"/$userId") }
+                onClick = { /*navController.navigate(route = AppScreens.Upload.name+"/$userId")*/ }
             )
         }
     ) { innerPadding ->
         ClimbsList(
             climbViewModel = climbViewModel,
             navController = navController,
-            userId = userId,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -109,7 +116,6 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
 fun ClimbsList(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    userId: Int,
     modifier: Modifier
 ) {
     // Get data from the ViewModel
@@ -183,14 +189,14 @@ fun ClimbsList(
                     ClimbsListItem(
                         onClick = {
                             focusManager.clearFocus()
-                            navController.navigate(
+                            /*navController.navigate(
                                 route = AppScreens.Detail.name+"/$userId/${it.climbId}"
-                            )
+                            )*/
                         },
                         climb = it,
                         attempts = attemptList.filter({attempt ->
                             attempt.climbId == it.climbId
-                                    && attempt.userId == userId
+                                    /*&& attempt.userId == userId*/
                         }),
                         uploader = userList.find{user -> user.userId == it.userId}?.username,
                         placeholder = placeholderPainter
@@ -207,7 +213,7 @@ fun ClimbsListItem(
     onClick: () -> Unit,
     climb: Climb,
     attempts: List<Attempt>,
-    uploader: String?, // TODO use this
+    uploader: String?,
     placeholder: Painter
 ) {
     Card(

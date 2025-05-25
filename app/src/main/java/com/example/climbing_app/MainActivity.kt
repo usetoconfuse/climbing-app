@@ -23,6 +23,8 @@ import com.example.climbing_app.ui.screens.ClimbDetailsScreen
 import com.example.climbing_app.ui.screens.LoginScreen
 import com.example.climbing_app.ui.screens.UploadClimbScreen
 import com.example.climbing_app.ui.theme.ClimbingappTheme
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 class MainActivity : ComponentActivity() {
@@ -37,6 +39,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Firebase authentication
+                    val auth = Firebase.auth
+                    val user = auth.currentUser
+
                     // ViewModel
                     val climbViewModel = ClimbViewModel(application)
 
@@ -44,7 +50,11 @@ class MainActivity : ComponentActivity() {
                     val navController: NavHostController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = AppScreens.Login.name,
+                        startDestination = if (user != null) {
+                                AppScreens.Climbs.name
+                            } else {
+                                AppScreens.Login.name
+                            },
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None }
                     ) {
@@ -56,41 +66,28 @@ class MainActivity : ComponentActivity() {
                         }
                         // Your climbs
                         composable(
-                            route = AppScreens.Climbs.name+"/{user}",
-                            arguments = listOf(
-                                navArgument(name = "user") {
-                                    type = NavType.IntType
-                                }
-                            )
+                            route = AppScreens.Climbs.name,
                         ) {index ->
                             AllClimbsScreen(
                                 climbViewModel,
-                                navController,
-                                userId = index.arguments?.getInt("user"))
+                                navController
+                            )
                         }
+                        /*
                         // Upload climb, this is a dialog so it appears over the previous screen
                         composable(
-                            route = AppScreens.Upload.name+"/{user}",
-                            arguments = listOf(
-                                navArgument(name = "user") {
-                                    type = NavType.IntType
-                                }
-                            )
+                            route = AppScreens.Upload.name
                         ) {
                             index ->
                             UploadClimbScreen(
                                 climbViewModel,
-                                navController,
-                                userId = index.arguments?.getInt("user")
+                                navController
                             )
                         }
                         // Climb details
                         composable(
-                            route = AppScreens.Detail.name+"/{user}/{climb}",
+                            route = AppScreens.Detail.name+"/{climb}",
                             arguments = listOf(
-                                navArgument(name = "user") {
-                                  type = NavType.IntType
-                                },
                                 navArgument(name = "climb") {
                                     type = NavType.IntType
                                 }
@@ -100,10 +97,10 @@ class MainActivity : ComponentActivity() {
                             ClimbDetailsScreen(
                                 climbViewModel,
                                 navController,
-                                userId = index.arguments?.getInt("user"),
                                 climbId = index.arguments?.getInt("climb")
                             )
                         }
+                        */
                     }
                 }
             }
