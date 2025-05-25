@@ -26,10 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
+import com.example.climbing_app.data.User
 import com.example.climbing_app.ui.ClimbViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.firestore
 
 
 @Composable
@@ -47,6 +49,8 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
             val user = auth.currentUser
             if (user != null) navController.navigate(AppScreens.Climbs.name)
 
+            val db = Firebase.firestore
+
             val context = LocalContext.current
 
             val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
@@ -63,7 +67,6 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                         if (task.isSuccessful) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success")
-                            val user = auth.currentUser
                             navController.navigate(route = AppScreens.Climbs.name)
                         } else {
                             // If sign in fails, display a message to the user.
@@ -90,16 +93,16 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                     auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
-                                // Sign in success, set user's display name
+                                // Sign in success, store display name in firestore
                                 Log.d(TAG, "createUserWithEmail:success")
-
-                                val profileUpdates = userProfileChangeRequest {
-                                    displayName = userDisplayName
-                                }
-
                                 val thisUser = auth.currentUser
-                                thisUser?.updateProfile(profileUpdates)
-
+                                db.collection("users")
+                                    .document(thisUser!!.uid)
+                                    .set(
+                                        hashMapOf(
+                                            "displayName" to userDisplayName
+                                        )
+                                    )
                                 navController.navigate(route = AppScreens.Climbs.name)
                             } else {
                                 // If sign in fails, display a message to the user.

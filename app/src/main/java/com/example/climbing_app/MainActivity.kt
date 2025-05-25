@@ -73,7 +73,6 @@ class MainActivity : ComponentActivity() {
                                 navController
                             )
                         }
-                        /*
                         // Upload climb, this is a dialog so it appears over the previous screen
                         composable(
                             route = AppScreens.Upload.name
@@ -100,7 +99,6 @@ class MainActivity : ComponentActivity() {
                                 climbId = index.arguments?.getInt("climb")
                             )
                         }
-                        */
                     }
                 }
             }

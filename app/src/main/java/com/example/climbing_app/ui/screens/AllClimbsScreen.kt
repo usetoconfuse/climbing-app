@@ -1,5 +1,7 @@
 package com.example.climbing_app.ui.screens
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -51,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.climbing_app.AppScreens
@@ -63,6 +67,14 @@ import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.Filter
+import com.google.firebase.firestore.Filter.and
+import com.google.firebase.firestore.Filter.greaterThanOrEqualTo
+import com.google.firebase.firestore.Filter.lessThanOrEqualTo
+import com.google.firebase.firestore.Filter.or
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.toObjects
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +83,13 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
     val auth = Firebase.auth
     val user = auth.currentUser ?: return
 
+    val db = Firebase.firestore
+    val nameRef = db.collection("users").document(user.uid)
+    var name by rememberSaveable { mutableStateOf("") }
+    nameRef.get().addOnSuccessListener {documentSnapshot ->
+        name = documentSnapshot.get("displayName").toString()
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -78,7 +97,7 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 title = {
-                    Text("${user.displayName} - All Climbs")
+                    Text("$name - All Climbs")
                 },
                 navigationIcon = {
                     IconButton(
@@ -99,7 +118,7 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
             ExtendedFloatingActionButton(
                 text = { Text("NEW") },
                 icon = { Icon(Icons.Filled.Add, null) },
-                onClick = { /*navController.navigate(route = AppScreens.Upload.name+"/$userId")*/ }
+                onClick = { navController.navigate(route = AppScreens.Upload.name) }
             )
         }
     ) { innerPadding ->
@@ -118,6 +137,8 @@ fun ClimbsList(
     navController: NavController,
     modifier: Modifier
 ) {
+    val db = Firebase.firestore
+
     // Get data from the ViewModel
     val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
@@ -130,24 +151,46 @@ fun ClimbsList(
     val focusManager = LocalFocusManager.current
 
     // User input into search bar
-    var query by rememberSaveable { mutableStateOf("") }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val (searchResults, setSearchResults) = remember { mutableStateOf(emptyList<Climb>()) }
 
-    // Filter only items whose name, grade or tags contain the query string
-    val searchResults by remember {
-        derivedStateOf {
-            if (query.isEmpty()) {
-                climbList
+    fun getResultsFromFirestore() {
+        // Filter only items whose name, grade or tags contain the query string (case-sensitive)
+        val climbCollection = db.collection("climbs")
+        val firestoreQuery = climbCollection.where(or(
+            and(
+                greaterThanOrEqualTo("name", searchQuery),
+                lessThanOrEqualTo("name", searchQuery+"\uf8ff")
+            ),
+            and(
+                greaterThanOrEqualTo("grade", searchQuery),
+                lessThanOrEqualTo("grade", searchQuery+"\uf8ff")
+            ),
+            and(
+                greaterThanOrEqualTo("style", searchQuery),
+                lessThanOrEqualTo("style", searchQuery+"\uf8ff")
+            ),
+            and(
+                greaterThanOrEqualTo("holds", searchQuery),
+                lessThanOrEqualTo("holds", searchQuery+"\uf8ff")
+            ),
+            and(
+                greaterThanOrEqualTo("incline", searchQuery),
+                lessThanOrEqualTo("incline", searchQuery+"\uf8ff")
+            )
+        ))
+        val listener = firestoreQuery.addSnapshotListener {snapshot, e ->
+            if (snapshot != null) {
+                val newList = snapshot.toObjects<Climb>()
+                setSearchResults(newList)
             } else {
-                climbList.filter {
-                    it.name.contains(query, ignoreCase = true)
-                    || it.grade.contains(query, ignoreCase = true)
-                    || it.style.name.contains(query, ignoreCase = true)
-                    || it.holds.name.contains(query, ignoreCase = true)
-                    || it.incline.name.contains(query, ignoreCase = true)
-                }
+                Log.e(TAG, e?.message ?: e.toString())
             }
         }
+        firestoreQuery.get()
     }
+
+    getResultsFromFirestore()
 
     Column(
         modifier = modifier
@@ -159,17 +202,20 @@ fun ClimbsList(
             windowInsets = WindowInsets(top = 0.dp),
             inputField = {
                 SearchBarDefaults.InputField(
-                    query = query,
-                    onQueryChange = { query = it },
+                    query = searchQuery,
+                    onQueryChange = {
+                        searchQuery = it
+                        getResultsFromFirestore()
+                    },
                     onSearch = { focusManager.clearFocus() },
                     expanded = false,
                     onExpandedChange = {},
                     placeholder = { Text("Name, grade or tag...") },
                     leadingIcon = { Icon(Icons.Default.Search, "Search") },
                     trailingIcon = {
-                        if (query.isNotEmpty()) {
+                        if (searchQuery.isNotEmpty()) {
                             IconButton(
-                                onClick = { query = "" }
+                                onClick = { searchQuery = "" }
                             ) {
                                 Icon(Icons.Default.Clear, "Clear")
                             }
@@ -189,16 +235,16 @@ fun ClimbsList(
                     ClimbsListItem(
                         onClick = {
                             focusManager.clearFocus()
-                            /*navController.navigate(
-                                route = AppScreens.Detail.name+"/$userId/${it.climbId}"
-                            )*/
+                            navController.navigate(
+                                route = AppScreens.Detail.name+"/${it.climbId}"
+                            )
                         },
                         climb = it,
                         attempts = attemptList.filter({attempt ->
                             attempt.climbId == it.climbId
                                     /*&& attempt.userId == userId*/
                         }),
-                        uploader = userList.find{user -> user.userId == it.userId}?.username,
+                        uploader = "hardcoded",
                         placeholder = placeholderPainter
                     )
                     HorizontalDivider(thickness = 2.dp)

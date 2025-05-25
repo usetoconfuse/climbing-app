@@ -93,7 +93,7 @@ fun ClimbDetailsScreen(
     // Find the data for climb we're viewing
     val climb = climbList.find{ climb -> climb.climbId == climbId }
     val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
-    val userAttempts = attempts.filter { attempt -> attempt.userId == 1 } // FIXME hardcoded
+    val userAttempts = emptyList<Attempt>() // FIXME hardcoded
 
     val capitalizeFirst: (String) -> String = { str ->
         str.replaceFirstChar {
@@ -131,7 +131,7 @@ fun ClimbDetailsScreen(
                             TextButton(
                                 onClick = {
                                     val newAttempt = Attempt(
-                                        userId = 1, // FIXME hardcoded
+                                        userId = "1", // FIXME hardcoded
                                         climbId = climb.climbId,
                                         completed = openDialogType == "send"
                                     )
@@ -218,8 +218,7 @@ fun ClimbDetailsScreen(
                 // Main screen content
                 ClimbDetailsContent(
                     climb = climb,
-                    uploader = userList.find{user -> user.userId == climb.userId}?.username
-                                            ?: "unknown",
+                    uploader = "unknown", //FIXME hardcoded
                     userAttempts = userAttempts,
                     attempts = attempts,
                     users = userList
@@ -340,10 +339,7 @@ fun ClimbDetailsContent(
 fun AttemptHistoryList(attempts: List<Attempt>, users: List<User>) {
     LazyColumn {
         items(attempts) {
-            val attemptedUser = users.find{user -> user.userId == it.userId}
-            if (attemptedUser != null) {
-                AttemptHistoryItem(it, attemptedUser.username)
-            }
+            AttemptHistoryItem(it, "test") // FIXME hardcoded
         }
     }
 }

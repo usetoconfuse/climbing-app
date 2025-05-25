@@ -8,35 +8,21 @@ import java.time.format.DateTimeFormatter
 
 
 @Entity (
-    tableName = "climbs",
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = arrayOf("userId"),
-            childColumns = arrayOf("userId"),
-            onUpdate = ForeignKey.CASCADE,
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
+    tableName = "climbs"
 )
 data class Climb(
     @PrimaryKey(autoGenerate = true) val climbId: Int = 0,
-    val userId: Int,
-    val name: String,
-    val imageUri: String,
-    val grade: String,
+    val userId: String = "",
+    val name: String = "",
+    val imageUri: String = "",
+    val grade: String = "",
     val rating: Int = 0,
-    val description: String,
+    val description: String = "",
     val uploadDate: String = LocalDateTime.now().toString(),
-    val style: ClimbTagStyle,
-    val holds: ClimbTagHolds,
-    val incline: ClimbTagIncline
+    val style: ClimbTagStyle = ClimbTagStyle.Powerful,
+    val holds: ClimbTagHolds = ClimbTagHolds.Jugs,
+    val incline: ClimbTagIncline = ClimbTagIncline.Overhang
 ) {
-    // Get the upload date as LocalDateTime
-    fun getUploadDateTime(): LocalDateTime {
-        return LocalDateTime.parse(this.uploadDate)
-    }
-
     // Get the formatted upload date
     fun formattedUploadDate(): String {
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")

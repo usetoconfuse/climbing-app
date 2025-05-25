@@ -1,6 +1,8 @@
 package com.example.climbing_app.ui.screens
 
+import android.content.ContentValues.TAG
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +50,9 @@ import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.prepareCamera
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +71,7 @@ fun UploadClimbScreen(
         UploadClimbContent(
             climbViewModel = climbViewModel,
             navController = navController,
-            userId = 1, // FIXME hardcoded
+            user = user,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -77,9 +81,11 @@ fun UploadClimbScreen(
 fun UploadClimbContent(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    userId: Int,
+    user: FirebaseUser,
     modifier: Modifier
 ) {
+    val db = Firebase.firestore
+
     // Get context for toast
     val context = LocalContext.current
 
@@ -111,7 +117,7 @@ fun UploadClimbContent(
         else {
             // Upload the climb
             val newClimb = Climb(
-                userId = userId,
+                userId = "1",
                 name = name,
                 imageUri = if (capturedImageUri.path?.isNotEmpty() == true){
                     capturedImageUri.toString()
@@ -126,6 +132,16 @@ fun UploadClimbContent(
                 holds = holds,
                 incline = incline
             )
+
+            // Upload climb to firestore
+            db.collection("climbs")
+                .add(newClimb)
+                .addOnSuccessListener { documentReference ->
+                    Log.d(TAG, "DocumentSnapshot written with ID: ${documentReference.id}")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Error adding document", e)
+                }
 
             climbViewModel.insertClimb(newClimb)
             Toast.makeText(
