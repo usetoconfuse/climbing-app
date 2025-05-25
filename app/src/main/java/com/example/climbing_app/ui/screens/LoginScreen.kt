@@ -29,6 +29,7 @@ import com.example.climbing_app.AppScreens
 import com.example.climbing_app.ui.ClimbViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.auth.userProfileChangeRequest
 
 
 @Composable
@@ -53,6 +54,7 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
             // Login details
             // Firebase authentication requires email and password
             var email by rememberSaveable { mutableStateOf("") }
+            var userDisplayName by rememberSaveable { mutableStateOf("") }
             var password by rememberSaveable { mutableStateOf("") }
 
             fun authenticateLogin() {
@@ -88,9 +90,16 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                     auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
-                                // Sign in success, update UI with the signed-in user's information
+                                // Sign in success, set user's display name
                                 Log.d(TAG, "createUserWithEmail:success")
-                                val user = auth.currentUser
+
+                                val profileUpdates = userProfileChangeRequest {
+                                    displayName = userDisplayName
+                                }
+
+                                val thisUser = auth.currentUser
+                                thisUser?.updateProfile(profileUpdates)
+
                                 navController.navigate(route = AppScreens.Climbs.name)
                             } else {
                                 // If sign in fails, display a message to the user.
@@ -110,7 +119,20 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                 fontSize = 32.sp
             )
 
-            // Username TextField
+            // Display name TextField
+            OutlinedTextField(
+                label = { Text("Display Name") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp),
+                value = userDisplayName,
+                onValueChange = {
+                    userDisplayName = it.take(15)
+                }
+            )
+
+            // Email TextField
             OutlinedTextField(
                 label = { Text("Email") },
                 singleLine = true,
