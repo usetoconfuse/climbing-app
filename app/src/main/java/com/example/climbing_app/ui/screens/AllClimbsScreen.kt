@@ -78,7 +78,7 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 title = {
-                    Text("All Climbs")
+                    Text("${user.displayName} - All Climbs")
                 },
                 navigationIcon = {
                     IconButton(
