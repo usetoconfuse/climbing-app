@@ -29,7 +29,6 @@ import com.example.climbing_app.ui.ClimbViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
-import com.google.firebase.firestore.firestore
 
 
 @Composable

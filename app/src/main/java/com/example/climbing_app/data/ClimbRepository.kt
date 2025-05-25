@@ -4,7 +4,6 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.Filter.and
 import com.google.firebase.firestore.Filter.greaterThanOrEqualTo
 import com.google.firebase.firestore.Filter.lessThanOrEqualTo
