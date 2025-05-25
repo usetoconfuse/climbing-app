@@ -1,5 +1,6 @@
 package com.example.climbing_app.ui.screens
 
+import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.compose.foundation.layout.Column
@@ -35,9 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,6 +47,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
@@ -54,7 +56,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.climbing_app.AppScreens
@@ -67,14 +68,13 @@ import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.Filter.and
 import com.google.firebase.firestore.Filter.greaterThanOrEqualTo
 import com.google.firebase.firestore.Filter.lessThanOrEqualTo
 import com.google.firebase.firestore.Filter.or
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,13 +83,6 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
     val auth = Firebase.auth
     val user = auth.currentUser ?: return
 
-    val db = Firebase.firestore
-    val nameRef = db.collection("users").document(user.uid)
-    var name by rememberSaveable { mutableStateOf("") }
-    nameRef.get().addOnSuccessListener {documentSnapshot ->
-        name = documentSnapshot.get("displayName").toString()
-    }
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -97,7 +90,7 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 title = {
-                    Text("$name - All Climbs")
+                    Text("${user.displayName} - All Climbs")
                 },
                 navigationIcon = {
                     IconButton(
@@ -130,6 +123,7 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClimbsList(
@@ -137,11 +131,7 @@ fun ClimbsList(
     navController: NavController,
     modifier: Modifier
 ) {
-    val db = Firebase.firestore
-
     // Get data from the ViewModel
-    val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
-    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
 
     // Image painter resource for climbs with no uploaded photo
@@ -152,45 +142,7 @@ fun ClimbsList(
 
     // User input into search bar
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    val (searchResults, setSearchResults) = remember { mutableStateOf(emptyList<Climb>()) }
-
-    fun getResultsFromFirestore() {
-        // Filter only items whose name, grade or tags contain the query string (case-sensitive)
-        val climbCollection = db.collection("climbs")
-        val firestoreQuery = climbCollection.where(or(
-            and(
-                greaterThanOrEqualTo("name", searchQuery),
-                lessThanOrEqualTo("name", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("grade", searchQuery),
-                lessThanOrEqualTo("grade", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("style", searchQuery),
-                lessThanOrEqualTo("style", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("holds", searchQuery),
-                lessThanOrEqualTo("holds", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("incline", searchQuery),
-                lessThanOrEqualTo("incline", searchQuery+"\uf8ff")
-            )
-        ))
-        val listener = firestoreQuery.addSnapshotListener {snapshot, e ->
-            if (snapshot != null) {
-                val newList = snapshot.toObjects<Climb>()
-                setSearchResults(newList)
-            } else {
-                Log.e(TAG, e?.message ?: e.toString())
-            }
-        }
-        firestoreQuery.get()
-    }
-
-    getResultsFromFirestore()
+    val searchResults by climbViewModel.getFilteredClimbs(searchQuery).observeAsState()
 
     Column(
         modifier = modifier
@@ -205,7 +157,6 @@ fun ClimbsList(
                     query = searchQuery,
                     onQueryChange = {
                         searchQuery = it
-                        getResultsFromFirestore()
                     },
                     onSearch = { focusManager.clearFocus() },
                     expanded = false,
@@ -227,11 +178,11 @@ fun ClimbsList(
             onExpandedChange = {}
         ) {}
         // Show 'no climbs' message if no climbs exist / match search
-        if (searchResults.isEmpty()) {
+        if (searchResults == null) {
             NoClimbsMessage(Modifier)
         } else {
             LazyColumn {
-                items(searchResults) {
+                items(searchResults!!) {
                     ClimbsListItem(
                         onClick = {
                             focusManager.clearFocus()
@@ -241,10 +192,8 @@ fun ClimbsList(
                         },
                         climb = it,
                         attempts = attemptList.filter({attempt ->
-                            attempt.climbId == it.climbId
-                                    /*&& attempt.userId == userId*/
+                            attempt.climbId == it.climbId && attempt.userId == Firebase.auth.currentUser?.uid
                         }),
-                        uploader = "hardcoded",
                         placeholder = placeholderPainter
                     )
                     HorizontalDivider(thickness = 2.dp)
@@ -259,7 +208,6 @@ fun ClimbsListItem(
     onClick: () -> Unit,
     climb: Climb,
     attempts: List<Attempt>,
-    uploader: String?,
     placeholder: Painter
 ) {
     Card(
@@ -292,7 +240,7 @@ fun ClimbsListItem(
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "by $uploader",
+                        text = "by ${climb.uploader}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(start = 10.dp)

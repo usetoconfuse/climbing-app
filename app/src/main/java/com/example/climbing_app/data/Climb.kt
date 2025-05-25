@@ -1,19 +1,15 @@
 package com.example.climbing_app.data
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentId
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
-@Entity (
-    tableName = "climbs"
-)
 data class Climb(
-    @PrimaryKey(autoGenerate = true) val climbId: Int = 0,
-    val userId: String = "",
+    @set:DocumentId var climbId: String? = null,
     val name: String = "",
+    val uploader: String = Firebase.auth.currentUser?.displayName.toString(),
     val imageUri: String = "",
     val grade: String = "",
     val rating: Int = 0,

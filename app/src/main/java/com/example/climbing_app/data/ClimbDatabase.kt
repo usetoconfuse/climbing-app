@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 
 @Database (
     entities = [
-        User::class, Climb::class, Attempt::class
+        Attempt::class
                ],
     version = 1,
     exportSchema = false

@@ -1,8 +1,10 @@
 package com.example.climbing_app.data
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -12,8 +14,8 @@ import java.time.format.DateTimeFormatter
 )
 data class Attempt(
     @PrimaryKey(autoGenerate = true) val attemptId: Int = 0,
-    val userId: String,
-    val climbId: Int,
+    val userId: String = Firebase.auth.currentUser!!.uid,
+    val climbId: String,
     val completed: Boolean,
     val date: String = LocalDateTime.now().toString()
 ) {

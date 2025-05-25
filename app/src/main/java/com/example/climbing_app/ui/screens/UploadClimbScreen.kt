@@ -61,8 +61,7 @@ fun UploadClimbScreen(
     climbViewModel: ClimbViewModel,
     navController: NavController
 ) {
-    val auth = Firebase.auth
-    val user = auth.currentUser ?: return
+    Firebase.auth.currentUser ?: return
 
     Scaffold(
         topBar = { ClimbingMinorTopAppBar("New Climb", navController) },
@@ -71,7 +70,6 @@ fun UploadClimbScreen(
         UploadClimbContent(
             climbViewModel = climbViewModel,
             navController = navController,
-            user = user,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -81,11 +79,8 @@ fun UploadClimbScreen(
 fun UploadClimbContent(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    user: FirebaseUser,
     modifier: Modifier
 ) {
-    val db = Firebase.firestore
-
     // Get context for toast
     val context = LocalContext.current
 
@@ -117,9 +112,8 @@ fun UploadClimbContent(
         else {
             // Upload the climb
             val newClimb = Climb(
-                userId = "1",
                 name = name,
-                imageUri = if (capturedImageUri.path?.isNotEmpty() == true){
+                imageUri = if (capturedImageUri.path?.isNotEmpty() == true) {
                     capturedImageUri.toString()
                 } else {
                     // Default image if none uploaded
@@ -134,19 +128,10 @@ fun UploadClimbContent(
             )
 
             // Upload climb to firestore
-            db.collection("climbs")
-                .add(newClimb)
-                .addOnSuccessListener { documentReference ->
-                    Log.d(TAG, "DocumentSnapshot written with ID: ${documentReference.id}")
-                }
-                .addOnFailureListener { e ->
-                    Log.w(TAG, "Error adding document", e)
-                }
-
             climbViewModel.insertClimb(newClimb)
             Toast.makeText(
                 context,
-                "${newClimb.name} uploaded successfully",
+                "${newClimb.name} uploaded",
                 Toast.LENGTH_SHORT
             ).show()
             navController.popBackStack()

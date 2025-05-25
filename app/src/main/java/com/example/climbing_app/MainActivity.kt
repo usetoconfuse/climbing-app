@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                             route = AppScreens.Detail.name+"/{climb}",
                             arguments = listOf(
                                 navArgument(name = "climb") {
-                                    type = NavType.IntType
+                                    type = NavType.StringType
                                 }
                             )
                         ) {
@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
                             ClimbDetailsScreen(
                                 climbViewModel,
                                 navController,
-                                climbId = index.arguments?.getInt("climb")
+                                climbId = index.arguments?.getString("climb")
                             )
                         }
                     }

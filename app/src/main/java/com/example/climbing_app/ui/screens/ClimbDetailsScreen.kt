@@ -1,5 +1,6 @@
 package com.example.climbing_app.ui.screens
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -59,7 +60,6 @@ import coil.compose.AsyncImage
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
-import com.example.climbing_app.data.User
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusIcon
@@ -71,29 +71,27 @@ import com.google.firebase.auth.auth
 import java.util.Locale
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClimbDetailsScreen(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    climbId: Int?
+    climbId: String?
 ) {
-    val auth = Firebase.auth
-    val user = auth.currentUser ?: return
-
+    if (climbId == null) return
     val context = LocalContext.current
 
     var openDialogType by rememberSaveable { mutableStateOf("") }
 
     // Get data from the ViewModel
-    val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
-    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
+    val climb = climbViewModel.getClimb(climbId).observeAsState().value
 
     // Find the data for climb we're viewing
-    val climb = climbList.find{ climb -> climb.climbId == climbId }
-    val attempts = attemptList.filter{ attempt -> attempt.climbId == climbId}
-    val userAttempts = emptyList<Attempt>() // FIXME hardcoded
+    val attempts = attemptList.filter{attempt ->
+        attempt.climbId == climbId && attempt.userId == Firebase.auth.currentUser?.uid
+    }
 
     val capitalizeFirst: (String) -> String = { str ->
         str.replaceFirstChar {
@@ -131,8 +129,7 @@ fun ClimbDetailsScreen(
                             TextButton(
                                 onClick = {
                                     val newAttempt = Attempt(
-                                        userId = "1", // FIXME hardcoded
-                                        climbId = climb.climbId,
+                                        climbId = climb.climbId!!,
                                         completed = openDialogType == "send"
                                     )
 
@@ -218,10 +215,8 @@ fun ClimbDetailsScreen(
                 // Main screen content
                 ClimbDetailsContent(
                     climb = climb,
-                    uploader = "unknown", //FIXME hardcoded
-                    userAttempts = userAttempts,
-                    attempts = attempts,
-                    users = userList
+                    uploader = climb.uploader,
+                    attempts = attempts
                 )
             }
         }
@@ -233,9 +228,7 @@ fun ClimbDetailsScreen(
 fun ClimbDetailsContent(
     climb: Climb,
     uploader: String,
-    userAttempts: List<Attempt>,
-    attempts: List<Attempt>,
-    users: List<User>
+    attempts: List<Attempt>
 ) {
     Column(
         modifier = Modifier
@@ -297,9 +290,9 @@ fun ClimbDetailsContent(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.weight(2.0f)
                 ) {
-                    CompletionStatusLabel((userAttempts.find{attempt -> attempt.completed}) != null)
+                    CompletionStatusLabel((attempts.find{attempt -> attempt.completed}) != null)
                     Text(
-                        text = "${userAttempts.size} attempts",
+                        text = "${attempts.size} attempts",
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.secondary,
@@ -330,28 +323,28 @@ fun ClimbDetailsContent(
             color = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp)
         )
-        AttemptHistoryList(attempts, users)
+        AttemptHistoryList(attempts)
     }
 }
 
 // Climb attempt history column
 @Composable
-fun AttemptHistoryList(attempts: List<Attempt>, users: List<User>) {
+fun AttemptHistoryList(attempts: List<Attempt>) {
     LazyColumn {
-        items(attempts) {
-            AttemptHistoryItem(it, "test") // FIXME hardcoded
+        itemsIndexed(attempts) { index, item ->
+            AttemptHistoryItem(attempts.size-index, item)
         }
     }
 }
 
 @Composable
-fun AttemptHistoryItem(attempt: Attempt, user: String) {
+fun AttemptHistoryItem(attemptNum: Int, attempt: Attempt) {
     Row(
         Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
     ) {
         CompletionStatusIcon(attempt.completed)
         Text(
-            text = user,
+            text = "Attempt $attemptNum",
             modifier = Modifier.padding(start = 10.dp)
         )
         Spacer(Modifier.weight(1.0f))
