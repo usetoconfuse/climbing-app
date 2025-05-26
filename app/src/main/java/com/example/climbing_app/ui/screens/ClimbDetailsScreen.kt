@@ -1,6 +1,9 @@
 package com.example.climbing_app.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.ContentValues.TAG
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -68,6 +72,8 @@ import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.storage.storage
+import java.io.File
 import java.util.Locale
 
 
@@ -79,6 +85,7 @@ fun ClimbDetailsScreen(
     navController: NavController,
     climbId: String?
 ) {
+    Firebase.auth.currentUser ?: return
     if (climbId == null) return
     val context = LocalContext.current
 
@@ -216,7 +223,9 @@ fun ClimbDetailsScreen(
                 ClimbDetailsContent(
                     climb = climb,
                     uploader = climb.uploader,
-                    attempts = attempts
+                    attempts = attempts,
+                    placeholderPainter = painterResource(R.drawable.img_placeholder),
+                    climbViewModel = climbViewModel
                 )
             }
         }
@@ -228,8 +237,13 @@ fun ClimbDetailsScreen(
 fun ClimbDetailsContent(
     climb: Climb,
     uploader: String,
-    attempts: List<Attempt>
+    attempts: List<Attempt>,
+    placeholderPainter: Painter,
+    climbViewModel: ClimbViewModel
 ) {
+    // Download the image for this climb
+    val imageUri by climbViewModel.getClimbImage(climb).observeAsState()
+
     Column(
         modifier = Modifier
             .padding(top = 16.dp)
@@ -239,8 +253,9 @@ fun ClimbDetailsContent(
             Modifier.padding(start = 16.dp, end = 16.dp)
         ) {
             AsyncImage(
-                model = climb.imageUri.toUri(),
-                placeholder = painterResource(R.drawable.img_placeholder),
+                model = imageUri,
+                placeholder = placeholderPainter,
+                error = placeholderPainter,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

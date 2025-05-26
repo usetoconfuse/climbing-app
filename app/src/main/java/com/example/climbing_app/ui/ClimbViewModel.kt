@@ -1,6 +1,8 @@
 package com.example.climbing_app.ui
 
 import android.app.Application
+import android.net.Uri
+import androidx.compose.ui.geometry.MutableRect
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -36,7 +38,9 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     */
 
     // Firestore climbs collection
-    fun insertClimb(climb: Climb) = repository.insertClimb(climb)
+    fun insertClimb(climb: Climb) = viewModelScope.launch {
+        repository.insertClimb(climb)
+    }
     fun getClimb(climbId: String): LiveData<Climb> {
         val result = MutableLiveData<Climb>()
         viewModelScope.launch {
@@ -48,6 +52,13 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
         val result = MutableLiveData<List<Climb>>()
         viewModelScope.launch {
             result.postValue(repository.getFilteredClimbs(searchQuery))
+        }
+        return result
+    }
+    fun getClimbImage(climb: Climb): MutableLiveData<Uri> {
+        val result = MutableLiveData<Uri>()
+        viewModelScope.launch {
+            result.postValue(repository.getClimbImage(climb))
         }
         return result
     }

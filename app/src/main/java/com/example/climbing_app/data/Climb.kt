@@ -10,7 +10,7 @@ data class Climb(
     @set:DocumentId var climbId: String? = null,
     val name: String = "",
     val uploader: String = Firebase.auth.currentUser?.displayName.toString(),
-    val imageUri: String = "",
+    var imageLocation: String? = null,
     val grade: String = "",
     val rating: Int = 0,
     val description: String = "",

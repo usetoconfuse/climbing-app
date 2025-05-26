@@ -106,15 +106,12 @@ fun UploadClimbContent(
             ).show()
         }
         else {
-            // Upload the climb
+            // Build the climb
             val newClimb = Climb(
                 name = name,
-                imageUri = if (capturedImageUri.path?.isNotEmpty() == true) {
+                imageLocation = if (capturedImageUri.path?.isNotEmpty() == true) {
                     capturedImageUri.toString()
-                } else {
-                    // Default image if none uploaded
-                    "android.resource://com.example.climbing_app/drawable/img_placeholder"
-                },
+                } else null,
                 grade = "V$grade",
                 rating = Integer.parseInt(rating),
                 description = description,
@@ -218,7 +215,7 @@ fun UploadClimbContent(
             }
             Image(
                 // Show thumbnail if a photo has been taken, otherwise fallback to placeholder
-                // BUG: image errors if you rotate the screen whilst in the camera app
+                // BUG: image disappears if you rotate the screen whilst in the camera app
                 painter = if (capturedImageUri != Uri.EMPTY) previewPainter
                 else painterResource(R.drawable.img_placeholder),
                 contentDescription = "Picture",

@@ -181,7 +181,8 @@ fun ClimbsList(
                         attempts = attemptList.filter({attempt ->
                             attempt.climbId == it.climbId && attempt.userId == Firebase.auth.currentUser?.uid
                         }),
-                        placeholder = placeholderPainter
+                        placeholder = placeholderPainter,
+                        climbViewModel = climbViewModel
                     )
                     HorizontalDivider(thickness = 2.dp)
                 }
@@ -195,8 +196,12 @@ fun ClimbsListItem(
     onClick: () -> Unit,
     climb: Climb,
     attempts: List<Attempt>,
-    placeholder: Painter
+    placeholder: Painter,
+    climbViewModel: ClimbViewModel
 ) {
+    // Download the image for this climb
+    val imageUri by climbViewModel.getClimbImage(climb).observeAsState()
+
     Card(
         onClick = onClick,
         shape = RectangleShape,
@@ -208,8 +213,9 @@ fun ClimbsListItem(
             Modifier.padding(10.dp)
         ) {
             AsyncImage(
-                model = climb.imageUri.toUri(),
+                model = imageUri,
                 placeholder = placeholder,
+                error = placeholder,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

@@ -1,6 +1,7 @@
 package com.example.climbing_app.data
 
 import android.content.ContentValues.TAG
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.google.firebase.Firebase
@@ -11,13 +12,17 @@ import com.google.firebase.firestore.Filter.or
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.tasks.await
+import androidx.core.net.toUri
+import java.io.File
 
 
 class ClimbRepository(private val climbDao: ClimbDao) {
     val allAttempts: LiveData<List<Attempt>> = climbDao.getAllAttempts()
 
     private val db = Firebase.firestore
+    private val storage = Firebase.storage
     private val climbCollection = db.collection("climbs")
 
     /*
@@ -34,7 +39,26 @@ class ClimbRepository(private val climbDao: ClimbDao) {
     */
 
     // Firestore climbs collection
-    fun insertClimb(climb: Climb) {
+    suspend fun insertClimb(climb: Climb) {
+        if (climb.imageLocation != null) {
+            // Upload the image to firebase storage
+            val storageRef = storage.reference
+            val localUri = climb.imageLocation!!.toUri()
+            val pathString = "images/${localUri.lastPathSegment}"
+            val imageRef = storageRef.child(pathString)
+
+            imageRef.putFile(localUri)
+            // Register observers to listen for when the download is done or if it fails
+                .addOnSuccessListener {
+                    Log.d(TAG, "Uploaded image $pathString")
+                    climb.imageLocation = pathString
+                }
+                .addOnFailureListener {
+                    Log.w(TAG, "Failed to upload image $pathString")
+                }.await()
+        }
+
+        // Add the climb to the firestore collection with a reference to the uploaded image
         climbCollection.add(climb)
             .addOnSuccessListener { documentReference ->
                 Log.d(TAG, "DocumentSnapshot written with ID: ${documentReference.id}")
@@ -77,7 +101,26 @@ class ClimbRepository(private val climbDao: ClimbDao) {
         val snapshot = climbFilterQuery.get().await()
         return snapshot.toObjects<Climb>()
     }
-
+    suspend fun getClimbImage(climb: Climb): Uri {
+        var imageUri = Uri.EMPTY
+        if (climb.imageLocation != null) {
+            // Download the image
+            val storageRef = Firebase.storage.reference
+            val imageRef = storageRef.child(climb.imageLocation!!)
+            imageRef.downloadUrl
+                .addOnSuccessListener {
+                    Log.d(TAG, "Successfully got image url $it")
+                    imageUri = it
+                }
+                .addOnFailureListener {
+                    Log.w(TAG, "Failed to get image url: ${it.message ?: it.toString()}")
+                }.await()
+        } else {
+            // Default image if none uploaded
+            imageUri = "android.resource://com.example.climbing_app/drawable/img_placeholder".toUri()
+        }
+        return imageUri
+    }
 
     // Local attempt table
     suspend fun insertAttempt(attempt: Attempt) {
