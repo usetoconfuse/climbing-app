@@ -13,9 +13,11 @@ composeBom = "2024.09.00"
 navigationRuntimeAndroid = "2.9.0-rc01"
 navigationCompose = "2.8.9"
 firebaseCommonKtx = "21.0.0"
+runner = "1.5.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }

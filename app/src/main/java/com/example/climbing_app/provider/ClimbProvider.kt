@@ -46,8 +46,10 @@ class ClimbProvider : ContentProvider() {
         val newRowId = when (uriMatcher.match(uri)) {
             ATTEMPTS -> {
                 val attempt = Attempt(
+                    userId = values?.getAsString(ClimbContract.Climbs.COLUMN_USER_ID) ?: "",
                     climbId = values?.getAsString(ClimbContract.Climbs.COLUMN_CLIMB_ID) ?: "",
-                    completed = values?.getAsBoolean(ClimbContract.Climbs.COLUMN_COMPLETED) ?: false
+                    completed = values?.getAsBoolean(ClimbContract.Climbs.COLUMN_COMPLETED) == true,
+                    date = values?.getAsString(ClimbContract.Climbs.COLUMN_DATE) ?: ""
                 )
                 climbDao.insertAttemptItem(attempt)
             }

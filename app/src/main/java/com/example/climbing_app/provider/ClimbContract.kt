@@ -15,7 +15,7 @@ object ClimbContract {
         const val CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.$AUTHORITY.$PATH_CLIMBS"
 
         const val COLUMN_ID = "attemptId"
-        const val USER_ID = "userId"
+        const val COLUMN_USER_ID = "userId"
         const val COLUMN_CLIMB_ID = "climbId"
         const val COLUMN_COMPLETED = "completed"
         const val COLUMN_DATE = "date"
