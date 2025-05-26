@@ -6,6 +6,7 @@ import com.google.firebase.firestore.DocumentId
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+// Climb object stored to Firestore
 data class Climb(
     @set:DocumentId var climbId: String? = null,
     val name: String = "",

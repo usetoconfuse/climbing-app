@@ -3,6 +3,7 @@ package com.example.climbing_app.data
 import android.content.ContentValues.TAG
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter.and
@@ -14,8 +15,6 @@ import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.tasks.await
-import androidx.core.net.toUri
-import java.io.File
 
 
 class ClimbRepository(private val climbDao: ClimbDao) {
@@ -24,19 +23,6 @@ class ClimbRepository(private val climbDao: ClimbDao) {
     private val db = Firebase.firestore
     private val storage = Firebase.storage
     private val climbCollection = db.collection("climbs")
-
-    /*
-    // Local climb table
-    suspend fun insertClimb(climb: Climb) {
-        climbDao.insertClimb(climb)
-    }
-    suspend fun updateClimb(climb: Climb) {
-        climbDao.updateClimb(climb)
-    }
-    suspend fun deleteClimb(climb: Climb) {
-        climbDao.deleteClimb(climb)
-    }
-    */
 
     // Firestore climbs collection
     suspend fun insertClimb(climb: Climb) {
@@ -131,15 +117,5 @@ class ClimbRepository(private val climbDao: ClimbDao) {
     }
     suspend fun deleteAttempt(attempt: Attempt) {
         climbDao.deleteAttempt(attempt)
-    }
-
-    // Queries
-    /*
-    fun getClimb(id: Int): LiveData<Climb> {
-        return climbDao.getClimb(id)
-    }
-    */
-    fun getAttemptsByClimb(climbId: Int): LiveData<List<Attempt>> {
-        return climbDao.getAttemptsByClimb(climbId)
     }
 }

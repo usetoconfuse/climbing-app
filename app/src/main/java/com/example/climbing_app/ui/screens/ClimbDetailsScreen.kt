@@ -1,9 +1,6 @@
 package com.example.climbing_app.ui.screens
 
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
-import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,7 +55,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.climbing_app.R
@@ -72,8 +68,6 @@ import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.storage.storage
-import java.io.File
 import java.util.Locale
 
 

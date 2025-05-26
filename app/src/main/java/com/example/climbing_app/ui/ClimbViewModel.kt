@@ -2,7 +2,6 @@ package com.example.climbing_app.ui
 
 import android.app.Application
 import android.net.Uri
-import androidx.compose.ui.geometry.MutableRect
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -23,19 +22,6 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
         repository = ClimbRepository(climbDao)
         allAttempts = repository.allAttempts
     }
-
-    // Climb table
-    /*
-    fun insertClimb(climb: Climb) = viewModelScope.launch {
-        repository.insertClimb(climb)
-    }
-    fun updateClimb(climb: Climb) = viewModelScope.launch {
-        repository.insertClimb(climb)
-    }
-    fun deleteClimb(climb: Climb) = viewModelScope.launch {
-        repository.deleteClimb(climb)
-    }
-    */
 
     // Firestore climbs collection
     fun insertClimb(climb: Climb) = viewModelScope.launch {
@@ -63,8 +49,6 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
         return result
     }
 
-
-
     // Local attempt table
     fun insertAttempt(attempt: Attempt) = viewModelScope.launch {
         repository.insertAttempt(attempt)
@@ -74,15 +58,5 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun deleteAttempt(attempt: Attempt) = viewModelScope.launch {
         repository.deleteAttempt(attempt)
-    }
-
-    // Queries
-    /*
-    fun getClimb(climbId: Int) = viewModelScope.launch {
-        repository.getClimb(climbId)
-    }
-    */
-    fun getAttemptsByClimb(climbId: Int) = viewModelScope.launch {
-        repository.getAttemptsByClimb(climbId)
     }
 }
