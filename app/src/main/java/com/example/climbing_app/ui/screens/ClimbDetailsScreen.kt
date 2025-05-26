@@ -1,6 +1,8 @@
 package com.example.climbing_app.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +25,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -30,6 +33,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,8 +59,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.climbing_app.AppScreens
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
@@ -93,6 +99,9 @@ fun ClimbDetailsScreen(
     val attempts = attemptList.filter{attempt ->
         attempt.climbId == climbId && attempt.userId == Firebase.auth.currentUser?.uid
     }
+
+    // Download the image for this climb
+    val imageUri by climbViewModel.getClimbImage(climb ?: Climb()).observeAsState()
 
     val capitalizeFirst: (String) -> String = { str ->
         str.replaceFirstChar {
@@ -157,6 +166,29 @@ fun ClimbDetailsScreen(
         topBar = {
             ClimbingMinorTopAppBar(climb?.name ?: "Not Found", navController)
         },
+        floatingActionButton = { if (climb != null) {
+            // Share button with ShareSheet
+            ExtendedFloatingActionButton(
+                text = { Text("SHARE") },
+                icon = { Icon(Icons.Default.Share, null) },
+                onClick = {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "Check out this climb on Sendtrain!\n" +
+                                    "${climb.name} by ${climb.uploader}" +
+                                    " | ${climb.grade} | ${climb.rating} stars\n" +
+                                    "I've attempted this climb ${attempts.size} times!"
+                        )
+                        type = "text/plain"
+                    }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                }
+            )
+        }},
         bottomBar = {
             // Bottom log buttons
             BottomAppBar {
@@ -219,7 +251,7 @@ fun ClimbDetailsScreen(
                     uploader = climb.uploader,
                     attempts = attempts,
                     placeholderPainter = painterResource(R.drawable.img_placeholder),
-                    climbViewModel = climbViewModel
+                    imageUri = imageUri
                 )
             }
         }
@@ -233,11 +265,8 @@ fun ClimbDetailsContent(
     uploader: String,
     attempts: List<Attempt>,
     placeholderPainter: Painter,
-    climbViewModel: ClimbViewModel
+    imageUri: Uri?
 ) {
-    // Download the image for this climb
-    val imageUri by climbViewModel.getClimbImage(climb).observeAsState()
-
     Column(
         modifier = Modifier
             .padding(top = 16.dp)
