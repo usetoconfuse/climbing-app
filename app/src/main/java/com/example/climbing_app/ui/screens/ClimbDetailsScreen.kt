@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,10 +58,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.climbing_app.AppScreens
 import com.example.climbing_app.R
 import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
@@ -239,20 +236,24 @@ fun ClimbDetailsScreen(
         if (climb == null) {
             ClimbNotFoundMessage(Modifier.padding(innerPadding))
         } else {
-            Column(
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxHeight()
                     .padding(innerPadding),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Main screen content
-                ClimbDetailsContent(
-                    climb = climb,
-                    uploader = climb.uploader,
-                    attempts = attempts,
-                    placeholderPainter = painterResource(R.drawable.img_placeholder),
-                    imageUri = imageUri
-                )
+                item {
+                    // Main screen content
+                    ClimbDetailsContent(
+                        climb = climb,
+                        uploader = climb.uploader,
+                        attempts = attempts,
+                        placeholderPainter = painterResource(R.drawable.img_placeholder),
+                        imageUri = imageUri
+                    )
+                }
+                itemsIndexed(attempts) { index, item ->
+                    AttemptHistoryItem(attempts.size-index, item)
+                }
             }
         }
     }
@@ -361,17 +362,6 @@ fun ClimbDetailsContent(
             color = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp)
         )
-        AttemptHistoryList(attempts)
-    }
-}
-
-// Climb attempt history column
-@Composable
-fun AttemptHistoryList(attempts: List<Attempt>) {
-    LazyColumn {
-        itemsIndexed(attempts) { index, item ->
-            AttemptHistoryItem(attempts.size-index, item)
-        }
     }
 }
 
