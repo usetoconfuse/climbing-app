@@ -171,6 +171,7 @@ fun ClimbDetailsScreen(
                 onClick = {
                     val sendIntent: Intent = Intent().apply {
                         action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TITLE, "Share climb via")
                         putExtra(
                             Intent.EXTRA_TEXT,
                             "Check out this climb on Sendtrain!\n" +
@@ -181,8 +182,10 @@ fun ClimbDetailsScreen(
                         type = "text/plain"
                     }
 
-                    val shareIntent = Intent.createChooser(sendIntent, null)
-                    context.startActivity(shareIntent)
+                    val shareIntent = Intent.createChooser(sendIntent, "Share climb via")
+                    if (shareIntent.resolveActivity(context.packageManager) != null) {
+                        context.startActivity(shareIntent)
+                    }
                 }
             )
         }},
