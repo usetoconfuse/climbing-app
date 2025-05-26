@@ -28,7 +28,6 @@ import com.google.firebase.auth.auth
 
 
 class MainActivity : ComponentActivity() {
-    // TODO change ViewModel to use lifecycle extension functions
     @SuppressLint("ViewModelConstructorInComposable")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +61,7 @@ class MainActivity : ComponentActivity() {
                         composable(
                             route = AppScreens.Login.name
                         ) {
-                            LoginScreen(climbViewModel, navController)
+                            LoginScreen(navController)
                         }
                         // Your climbs
                         composable(

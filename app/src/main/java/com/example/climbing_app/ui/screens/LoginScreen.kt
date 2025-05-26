@@ -25,14 +25,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
-import com.example.climbing_app.ui.ClimbViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 
 
 @Composable
-fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
+fun LoginScreen(navController: NavController) {
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -44,7 +43,15 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
         ) {
             val auth = Firebase.auth
             val user = auth.currentUser
-            if (user != null) navController.navigate(AppScreens.Climbs.name)
+            if (user != null) {
+                navController.navigate(
+                    route = AppScreens.Climbs.name
+                ) {
+                    popUpTo(AppScreens.Login.name) {
+                        inclusive = true
+                    }
+                }
+            }
 
             val context = LocalContext.current
 
@@ -69,7 +76,13 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                             if (task.isSuccessful) {
                                 // Sign in success, update UI with the signed-in user's information
                                 Log.d(TAG, "signInWithEmail:success")
-                                navController.navigate(route = AppScreens.Climbs.name)
+                                navController.navigate(
+                                    route = AppScreens.Climbs.name
+                                ) {
+                                    popUpTo(AppScreens.Login.name) {
+                                        inclusive = true
+                                    }
+                                }
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "signInWithEmail:failure", task.exception)
@@ -104,7 +117,13 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                                 }
                                 thisUser!!.updateProfile(profileUpdates)
                                     .addOnSuccessListener {
-                                        navController.navigate(route = AppScreens.Climbs.name)
+                                        navController.navigate(
+                                            route = AppScreens.Climbs.name
+                                        ) {
+                                            popUpTo(AppScreens.Login.name) {
+                                                inclusive = true
+                                            }
+                                        }
                                     }
                             } else {
                                 // If sign in fails, display a message to the user.

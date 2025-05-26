@@ -82,7 +82,13 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
                     IconButton(
                         onClick = {
                             Firebase.auth.signOut()
-                            navController.navigate(AppScreens.Login.name)
+                            navController.navigate(
+                                route = AppScreens.Login.name
+                            ) {
+                                popUpTo(AppScreens.Climbs.name) {
+                                    inclusive = true
+                                }
+                            }
                         }
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp,
