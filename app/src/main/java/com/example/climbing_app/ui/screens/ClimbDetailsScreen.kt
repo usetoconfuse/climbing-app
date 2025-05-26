@@ -174,7 +174,7 @@ fun ClimbDetailsScreen(
                         putExtra(Intent.EXTRA_TITLE, "Share climb via")
                         putExtra(
                             Intent.EXTRA_TEXT,
-                            "Check out this climb on Sendtrain!\n" +
+                            "Check out this climb from Sendtrain!\n" +
                                     "${climb.name} by ${climb.uploader}" +
                                     " | ${climb.grade} | ${climb.rating} stars\n" +
                                     "I've attempted this climb ${attempts.size} times!"
