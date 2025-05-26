@@ -16,8 +16,12 @@
         android:theme="@style/Theme.Climbingapp"
         tools:targetApi="31" >
         <provider
+            android:name=".provider.ClimbProvider"
+            android:authorities="com.example.climbing_app.provider"
+            android:exported="false"/>
+        <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="${applicationId}.cameraprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

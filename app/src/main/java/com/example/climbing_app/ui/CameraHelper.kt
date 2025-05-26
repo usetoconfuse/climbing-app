@@ -34,7 +34,7 @@ fun Context.prepareCamera(setTargetUri: (Uri) -> Unit): () -> Unit {
 
     val uri = FileProvider.getUriForFile(
         Objects.requireNonNull(this),
-        "${packageName}.provider",
+        "${packageName}.cameraprovider",
         file
     )
 

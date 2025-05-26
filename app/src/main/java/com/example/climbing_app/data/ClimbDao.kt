@@ -1,5 +1,6 @@
 package com.example.climbing_app.data
 
+import android.database.Cursor
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
@@ -21,4 +22,17 @@ interface ClimbDao {
     suspend fun deleteAttempt(attempt: Attempt)
     @Query("SELECT * FROM attempts ORDER BY date DESC")
     fun getAllAttempts(): LiveData<List<Attempt>>
+
+    //for the use of ContentProvider
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertAttemptItem(attempt: Attempt):Long
+    @Delete
+    fun deleteAttemptItem(attempt: Attempt): Int
+    @Query("SELECT * FROM attempts")
+    fun getAllAttemptsCursor(): Cursor
+    @Query("SELECT * from attempts WHERE attemptId = :id")
+    fun getAttemptItemCursor(id: Int): Cursor
+    @Query("DELETE FROM attempts")
+    fun clearAttemptData()
+
 }
