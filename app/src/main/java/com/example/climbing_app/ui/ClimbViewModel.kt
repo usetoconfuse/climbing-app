@@ -1,6 +1,7 @@
 package com.example.climbing_app.ui
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,48 +10,46 @@ import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.data.ClimbDatabase
 import com.example.climbing_app.data.ClimbRepository
-import com.example.climbing_app.data.User
 import kotlinx.coroutines.launch
 
 
 class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ClimbRepository
-    val allUsers: LiveData<List<User>>
-    val allClimbs: LiveData<List<Climb>>
     val allAttempts: LiveData<List<Attempt>>
-    var currentUser: LiveData<Int>
     init {
-        val climbDao = ClimbDatabase.getDatabase(application).climbDao()
+        val roomDb = ClimbDatabase.getDatabase(application)
+        val climbDao = roomDb.climbDao()
         repository = ClimbRepository(climbDao)
-        allUsers = repository.allUsers
-        allClimbs = repository.allClimbs
         allAttempts = repository.allAttempts
-        currentUser = MutableLiveData<Int>()
     }
 
-    // User table
-    fun insertUser(user: User) = viewModelScope.launch {
-        repository.insertUser(user)
-    }
-    fun updateUser(user: User) = viewModelScope.launch {
-        repository.insertUser(user)
-    }
-    fun deleteUser(user: User) = viewModelScope.launch {
-        repository.deleteUser(user)
-    }
-
-    // Climb table
+    // Firestore climbs collection
     fun insertClimb(climb: Climb) = viewModelScope.launch {
         repository.insertClimb(climb)
     }
-    fun updateClimb(climb: Climb) = viewModelScope.launch {
-        repository.insertClimb(climb)
+    fun getClimb(climbId: String): LiveData<Climb> {
+        val result = MutableLiveData<Climb>()
+        viewModelScope.launch {
+            result.postValue(repository.getClimb(climbId))
+        }
+        return result
     }
-    fun deleteClimb(climb: Climb) = viewModelScope.launch {
-        repository.deleteClimb(climb)
+    fun getFilteredClimbs(searchQuery: String): LiveData<List<Climb>> {
+        val result = MutableLiveData<List<Climb>>()
+        viewModelScope.launch {
+            result.postValue(repository.getFilteredClimbs(searchQuery))
+        }
+        return result
+    }
+    fun getClimbImage(climb: Climb): MutableLiveData<Uri> {
+        val result = MutableLiveData<Uri>()
+        viewModelScope.launch {
+            result.postValue(repository.getClimbImage(climb))
+        }
+        return result
     }
 
-    // Attempt table
+    // Local attempt table
     fun insertAttempt(attempt: Attempt) = viewModelScope.launch {
         repository.insertAttempt(attempt)
     }
@@ -59,17 +58,5 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun deleteAttempt(attempt: Attempt) = viewModelScope.launch {
         repository.deleteAttempt(attempt)
-    }
-
-    // Queries
-
-    fun authenticateUser(username: String, password: String) = viewModelScope.launch {
-        currentUser = repository.authenticateUser(username, password)
-    }
-    fun getClimb(climbId: Int) = viewModelScope.launch {
-        repository.getClimb(climbId)
-    }
-    fun getAttemptsByClimb(climbId: Int) = viewModelScope.launch {
-        repository.getAttemptsByClimb(climbId)
     }
 }

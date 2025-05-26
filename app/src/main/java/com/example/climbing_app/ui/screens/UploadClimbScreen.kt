@@ -47,16 +47,17 @@ import com.example.climbing_app.data.ClimbTagType
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.prepareCamera
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadClimbScreen(
     climbViewModel: ClimbViewModel,
-    navController: NavController,
-    userId: Int?
+    navController: NavController
 ) {
-    if (userId == null) return
+    Firebase.auth.currentUser ?: return
 
     Scaffold(
         topBar = { ClimbingMinorTopAppBar("New Climb", navController) },
@@ -65,7 +66,6 @@ fun UploadClimbScreen(
         UploadClimbContent(
             climbViewModel = climbViewModel,
             navController = navController,
-            userId = userId,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -75,7 +75,6 @@ fun UploadClimbScreen(
 fun UploadClimbContent(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    userId: Int,
     modifier: Modifier
 ) {
     // Get context for toast
@@ -107,16 +106,12 @@ fun UploadClimbContent(
             ).show()
         }
         else {
-            // Upload the climb
+            // Build the climb
             val newClimb = Climb(
-                userId = userId,
                 name = name,
-                imageUri = if (capturedImageUri.path?.isNotEmpty() == true){
+                imageLocation = if (capturedImageUri.path?.isNotEmpty() == true) {
                     capturedImageUri.toString()
-                } else {
-                    // Default image if none uploaded
-                    "android.resource://com.example.climbing_app/drawable/img_placeholder"
-                },
+                } else null,
                 grade = "V$grade",
                 rating = Integer.parseInt(rating),
                 description = description,
@@ -125,10 +120,11 @@ fun UploadClimbContent(
                 incline = incline
             )
 
+            // Upload climb to firestore
             climbViewModel.insertClimb(newClimb)
             Toast.makeText(
                 context,
-                "${newClimb.name} uploaded successfully",
+                "${newClimb.name} uploaded",
                 Toast.LENGTH_SHORT
             ).show()
             navController.popBackStack()
@@ -219,7 +215,7 @@ fun UploadClimbContent(
             }
             Image(
                 // Show thumbnail if a photo has been taken, otherwise fallback to placeholder
-                // BUG: image errors if you rotate the screen whilst in the camera app
+                // BUG: image disappears if you rotate the screen whilst in the camera app
                 painter = if (capturedImageUri != Uri.EMPTY) previewPainter
                 else painterResource(R.drawable.img_placeholder),
                 contentDescription = "Picture",

@@ -1,5 +1,6 @@
 package com.example.climbing_app.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,11 +31,9 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,7 +49,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.climbing_app.AppScreens
@@ -61,12 +59,15 @@ import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController, userId: Int?) {
-    if (userId == null) return
+fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
+    val auth = Firebase.auth
+    val user = auth.currentUser ?: return
 
     Scaffold(
         topBar = {
@@ -75,10 +76,15 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 title = {
-                    Text("All Climbs")
+                    Text("${user.displayName} - All Climbs")
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = {
+                            Firebase.auth.signOut()
+                            navController.navigate(AppScreens.Login.name)
+                        }
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp,
                             "Logout",
                             modifier = Modifier.rotate(180.0f)
@@ -91,30 +97,27 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
             ExtendedFloatingActionButton(
                 text = { Text("NEW") },
                 icon = { Icon(Icons.Filled.Add, null) },
-                onClick = { navController.navigate(route = AppScreens.Upload.name+"/$userId") }
+                onClick = { navController.navigate(route = AppScreens.Upload.name) }
             )
         }
     ) { innerPadding ->
         ClimbsList(
             climbViewModel = climbViewModel,
             navController = navController,
-            userId = userId,
             modifier = Modifier.padding(innerPadding)
         )
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClimbsList(
     climbViewModel: ClimbViewModel,
     navController: NavController,
-    userId: Int,
     modifier: Modifier
 ) {
     // Get data from the ViewModel
-    val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
-    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
 
     // Image painter resource for climbs with no uploaded photo
@@ -124,24 +127,8 @@ fun ClimbsList(
     val focusManager = LocalFocusManager.current
 
     // User input into search bar
-    var query by rememberSaveable { mutableStateOf("") }
-
-    // Filter only items whose name, grade or tags contain the query string
-    val searchResults by remember {
-        derivedStateOf {
-            if (query.isEmpty()) {
-                climbList
-            } else {
-                climbList.filter {
-                    it.name.contains(query, ignoreCase = true)
-                    || it.grade.contains(query, ignoreCase = true)
-                    || it.style.name.contains(query, ignoreCase = true)
-                    || it.holds.name.contains(query, ignoreCase = true)
-                    || it.incline.name.contains(query, ignoreCase = true)
-                }
-            }
-        }
-    }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val searchResults by climbViewModel.getFilteredClimbs(searchQuery).observeAsState()
 
     Column(
         modifier = modifier
@@ -153,17 +140,19 @@ fun ClimbsList(
             windowInsets = WindowInsets(top = 0.dp),
             inputField = {
                 SearchBarDefaults.InputField(
-                    query = query,
-                    onQueryChange = { query = it },
+                    query = searchQuery,
+                    onQueryChange = {
+                        searchQuery = it
+                    },
                     onSearch = { focusManager.clearFocus() },
                     expanded = false,
                     onExpandedChange = {},
                     placeholder = { Text("Name, grade or tag...") },
                     leadingIcon = { Icon(Icons.Default.Search, "Search") },
                     trailingIcon = {
-                        if (query.isNotEmpty()) {
+                        if (searchQuery.isNotEmpty()) {
                             IconButton(
-                                onClick = { query = "" }
+                                onClick = { searchQuery = "" }
                             ) {
                                 Icon(Icons.Default.Clear, "Clear")
                             }
@@ -175,25 +164,24 @@ fun ClimbsList(
             onExpandedChange = {}
         ) {}
         // Show 'no climbs' message if no climbs exist / match search
-        if (searchResults.isEmpty()) {
+        if (searchResults == null) {
             NoClimbsMessage(Modifier)
         } else {
             LazyColumn {
-                items(searchResults) {
+                items(searchResults!!) {
                     ClimbsListItem(
                         onClick = {
                             focusManager.clearFocus()
                             navController.navigate(
-                                route = AppScreens.Detail.name+"/$userId/${it.climbId}"
+                                route = AppScreens.Detail.name+"/${it.climbId}"
                             )
                         },
                         climb = it,
                         attempts = attemptList.filter({attempt ->
-                            attempt.climbId == it.climbId
-                                    && attempt.userId == userId
+                            attempt.climbId == it.climbId && attempt.userId == Firebase.auth.currentUser?.uid
                         }),
-                        uploader = userList.find{user -> user.userId == it.userId}?.username,
-                        placeholder = placeholderPainter
+                        placeholder = placeholderPainter,
+                        climbViewModel = climbViewModel
                     )
                     HorizontalDivider(thickness = 2.dp)
                 }
@@ -207,9 +195,12 @@ fun ClimbsListItem(
     onClick: () -> Unit,
     climb: Climb,
     attempts: List<Attempt>,
-    uploader: String?, // TODO use this
-    placeholder: Painter
+    placeholder: Painter,
+    climbViewModel: ClimbViewModel
 ) {
+    // Download the image for this climb
+    val imageUri by climbViewModel.getClimbImage(climb).observeAsState()
+
     Card(
         onClick = onClick,
         shape = RectangleShape,
@@ -221,8 +212,9 @@ fun ClimbsListItem(
             Modifier.padding(10.dp)
         ) {
             AsyncImage(
-                model = climb.imageUri.toUri(),
+                model = imageUri,
                 placeholder = placeholder,
+                error = placeholder,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -240,7 +232,7 @@ fun ClimbsListItem(
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "by $uploader",
+                        text = "by ${climb.uploader}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(start = 10.dp)

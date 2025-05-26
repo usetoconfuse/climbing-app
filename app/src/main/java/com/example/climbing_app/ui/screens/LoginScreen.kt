@@ -1,5 +1,7 @@
 package com.example.climbing_app.ui.screens
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -24,8 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
-import com.example.climbing_app.data.User
 import com.example.climbing_app.ui.ClimbViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.auth.userProfileChangeRequest
 
 
 @Composable
@@ -39,51 +42,80 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                 .padding(24.dp)
                 .padding(top = 48.dp)
         ) {
+            val auth = Firebase.auth
+            val user = auth.currentUser
+            if (user != null) navController.navigate(AppScreens.Climbs.name)
+
             val context = LocalContext.current
 
-            val userList by climbViewModel.allUsers.observeAsState(initial = emptyList())
-
             // Login details
-            var username by rememberSaveable { mutableStateOf("") }
+            // Firebase authentication requires email and password
+            var email by rememberSaveable { mutableStateOf("") }
+            var userDisplayName by rememberSaveable { mutableStateOf("") }
             var password by rememberSaveable { mutableStateOf("") }
 
             fun authenticateLogin() {
-                val user = userList.find{user ->
-                    user.username == username && user.password == password
-                }
-                if (user?.userId == null) {
-                    // Login failed
+                // Display toast and do not upload if any input field is empty
+                if (listOf(email, password).any { x -> x.isEmpty() }) {
                     Toast.makeText(
                         context,
-                        "Login failed",
+                        "Email and password cannot be empty",
                         Toast.LENGTH_SHORT
                     ).show()
-                } else {
-                    // Log the user in
-                    navController.navigate(route = AppScreens.Climbs.name+"/${user.userId}")
+                }
+                else {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d(TAG, "signInWithEmail:success")
+                                navController.navigate(route = AppScreens.Climbs.name)
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.w(TAG, "signInWithEmail:failure", task.exception)
+                                Toast.makeText(
+                                    context,
+                                    "Authentication failed.",
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            }
+                        }
                 }
             }
 
             fun addUser() {
                 // Display toast and do not upload if any input field is empty
-                if (listOf(username, password).any { x -> x.isEmpty() }) {
+                if (listOf(userDisplayName, email, password).any { x -> x.isEmpty() }) {
                     Toast.makeText(
                         context,
-                        "Username and password cannot be empty",
+                        "Username, email and password cannot be empty",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
                 else {
-                    val newUser = User(
-                        username = username,
-                        password = password
-                    )
-                    climbViewModel.insertUser(newUser)
-                    Toast.makeText(
-                        context,
-                        "Added user $username",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Sign in success, store display name in firestore
+                                Log.d(TAG, "createUserWithEmail:success")
+                                val thisUser = auth.currentUser
+                                val profileUpdates = userProfileChangeRequest {
+                                    displayName = userDisplayName
+                                }
+                                thisUser!!.updateProfile(profileUpdates)
+                                    .addOnSuccessListener {
+                                        navController.navigate(route = AppScreens.Climbs.name)
+                                    }
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.w(TAG, "createUserWithEmail:failure", task.exception)
+                                Toast.makeText(
+                                    context,
+                                    "Authentication failed.",
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            }
+                        }
                 }
             }
 
@@ -92,16 +124,29 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                 fontSize = 32.sp
             )
 
-            // Username TextField
+            // Display name TextField
             OutlinedTextField(
-                label = { Text("Username") },
+                label = { Text("Display Name") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp),
-                value = username,
+                value = userDisplayName,
                 onValueChange = {
-                    username = it.take(15)
+                    userDisplayName = it.take(15)
+                }
+            )
+
+            // Email TextField
+            OutlinedTextField(
+                label = { Text("Email") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp),
+                value = email,
+                onValueChange = {
+                    email = it
                 }
             )
 
@@ -115,7 +160,7 @@ fun LoginScreen(climbViewModel: ClimbViewModel, navController: NavController) {
                     .padding(top = 8.dp),
                 value = password,
                 onValueChange = {
-                    password = it.take(15)
+                    password = it
                 }
             )
 
