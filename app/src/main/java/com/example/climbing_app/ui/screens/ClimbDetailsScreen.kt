@@ -183,9 +183,7 @@ fun ClimbDetailsScreen(
                     }
 
                     val shareIntent = Intent.createChooser(sendIntent, "Share climb via")
-                    if (shareIntent.resolveActivity(context.packageManager) != null) {
-                        context.startActivity(shareIntent)
-                    }
+                    context.startActivity(shareIntent)
                 }
             )
         }},
