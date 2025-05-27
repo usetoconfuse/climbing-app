@@ -127,6 +127,7 @@ fun ClimbDetailsScreen(
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
 
+    // Dialogs for logging attempt confirmation
     when {
         openDialogType.isNotEmpty() && climb != null -> {
             BasicAlertDialog(
@@ -143,7 +144,7 @@ fun ClimbDetailsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Log $openDialogType for ${climb!!.name}?",
+                            text = "Log $openDialogType for ${climb.name}?",
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Row(
@@ -157,14 +158,14 @@ fun ClimbDetailsScreen(
                             TextButton(
                                 onClick = {
                                     val newAttempt = Attempt(
-                                        climbId = climb!!.climbId!!,
+                                        climbId = climb.climbId!!,
                                         completed = openDialogType == "send"
                                     )
 
                                     climbViewModel.insertAttempt(newAttempt)
                                     Toast.makeText(
                                         context,
-                                        "${capitalizeFirst(openDialogType)} logged for ${climb!!.name}",
+                                        "${capitalizeFirst(openDialogType)} logged for ${climb.name}",
                                         Toast.LENGTH_SHORT
                                     ).show()
 
@@ -196,8 +197,8 @@ fun ClimbDetailsScreen(
                         putExtra(
                             Intent.EXTRA_TEXT,
                             "Check out this climb from Sendtrain!\n" +
-                                    "${climb!!.name} by ${climb!!.uploader}" +
-                                    " | ${climb!!.grade} | ${climb!!.rating} stars\n" +
+                                    "${climb.name} by ${climb.uploader}" +
+                                    " | ${climb.grade} | ${climb.rating} stars\n" +
                                     "I've attempted this climb ${attempts.size} times!"
                         )
                         type = "text/plain"
