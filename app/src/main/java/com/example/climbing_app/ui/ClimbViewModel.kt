@@ -29,13 +29,6 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     fun insertClimb(climb: Climb) = viewModelScope.launch {
         repository.insertClimb(climb)
     }
-    fun getClimb(climbId: String): LiveData<Climb> {
-        val result = MutableLiveData<Climb>()
-        viewModelScope.launch {
-            result.postValue(repository.getClimb(climbId))
-        }
-        return result
-    }
     fun filterClimbs(searchQuery: String) = viewModelScope.launch {
         repository.filterClimbs(searchQuery)
     }
