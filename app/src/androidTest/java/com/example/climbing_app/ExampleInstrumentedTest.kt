@@ -47,8 +47,8 @@ class ClimbProviderTest {
         resolver = context.contentResolver
 
         val values = ContentValues().apply {
-            put(ClimbContract.Climbs.COLUMN_USER_ID, "rsV2EiJqQigqNpC0Udw0cGt5lGE2")
-            put(ClimbContract.Climbs.COLUMN_CLIMB_ID, "XjDAHKP2Acp6VTGa1rQC")
+            put(ClimbContract.Climbs.COLUMN_USER_ID, "fake_firestore_id")
+            put(ClimbContract.Climbs.COLUMN_CLIMB_ID, "fake_firestore_id")
             put(ClimbContract.Climbs.COLUMN_COMPLETED, false)
         }
         Log.d("setup", values.toString())
@@ -60,8 +60,8 @@ class ClimbProviderTest {
         // Insert an attempt first
         val uri = ClimbContract.Climbs.CONTENT_URI
         val values = ContentValues().apply {
-            put(ClimbContract.Climbs.COLUMN_USER_ID, "rsV2EiJqQigqNpC0Udw0cGt5lGE2")
-            put(ClimbContract.Climbs.COLUMN_CLIMB_ID, "XjDAHKP2Acp6VTGa1rQC")
+            put(ClimbContract.Climbs.COLUMN_USER_ID, "fake_firestore_id")
+            put(ClimbContract.Climbs.COLUMN_CLIMB_ID, "fake_firestore_id")
             put(ClimbContract.Climbs.COLUMN_COMPLETED, true)
             put(ClimbContract.Climbs.COLUMN_DATE, LocalDateTime.now().toString())
         }
