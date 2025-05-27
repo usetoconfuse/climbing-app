@@ -60,7 +60,7 @@ class ClimbProvider : ContentProvider() {
     }
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String>?): Int {
-        val context = context ?: return 0  // Check if context is null
+        context ?: return 0  // Check if context is null
         val match = uriMatcher.match(uri)
         return when (match) {
             ATTEMPT_ID -> {
