@@ -52,7 +52,7 @@ class ClimbProviderTest {
             put(ClimbContract.Climbs.COLUMN_COMPLETED, false)
         }
         Log.d("setup", values.toString())
-        val uri = resolver.insert(ClimbContract.Climbs.CONTENT_URI, values)
+        resolver.insert(ClimbContract.Climbs.CONTENT_URI, values)
     }
 
     @Test
