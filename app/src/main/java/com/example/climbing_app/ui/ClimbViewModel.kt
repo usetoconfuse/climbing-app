@@ -16,11 +16,13 @@ import kotlinx.coroutines.launch
 class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ClimbRepository
     val allAttempts: LiveData<List<Attempt>>
+    val allClimbs: LiveData<List<Climb>>
     init {
         val roomDb = ClimbDatabase.getDatabase(application)
         val climbDao = roomDb.climbDao()
         repository = ClimbRepository(climbDao)
         allAttempts = repository.allAttempts
+        allClimbs = repository.allClimbs
     }
 
     // Firestore climbs collection
@@ -34,12 +36,8 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
         }
         return result
     }
-    fun getFilteredClimbs(searchQuery: String): LiveData<List<Climb>> {
-        val result = MutableLiveData<List<Climb>>()
-        viewModelScope.launch {
-            result.postValue(repository.getFilteredClimbs(searchQuery))
-        }
-        return result
+    fun filterClimbs(searchQuery: String) = viewModelScope.launch {
+        repository.filterClimbs(searchQuery)
     }
     fun getClimbImage(climb: Climb): MutableLiveData<Uri> {
         val result = MutableLiveData<Uri>()
@@ -48,7 +46,6 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
         }
         return result
     }
-
     // Local attempt table
     fun insertAttempt(attempt: Attempt) = viewModelScope.launch {
         repository.insertAttempt(attempt)

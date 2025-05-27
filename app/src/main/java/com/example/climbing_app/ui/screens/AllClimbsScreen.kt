@@ -133,6 +133,7 @@ fun AllClimbsContent(
 ) {
     // Get data from the ViewModel
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
+    val searchResults by climbViewModel.allClimbs.observeAsState()
 
     // Image painter resource for climbs with no uploaded photo
     val placeholderPainter = painterResource(R.drawable.img_placeholder)
@@ -142,7 +143,6 @@ fun AllClimbsContent(
 
     // User input into search bar
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    val searchResults by climbViewModel.getFilteredClimbs(searchQuery).observeAsState()
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
 
@@ -165,6 +165,7 @@ fun AllClimbsContent(
                             query = searchQuery,
                             onQueryChange = {
                                 searchQuery = it
+                                climbViewModel.filterClimbs(searchQuery)
                             },
                             onSearch = { focusManager.clearFocus() },
                             expanded = false,

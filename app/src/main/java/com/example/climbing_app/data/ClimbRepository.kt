@@ -5,11 +5,13 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter.and
 import com.google.firebase.firestore.Filter.greaterThanOrEqualTo
 import com.google.firebase.firestore.Filter.lessThanOrEqualTo
 import com.google.firebase.firestore.Filter.or
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
@@ -19,10 +21,34 @@ import kotlinx.coroutines.tasks.await
 
 class ClimbRepository(private val climbDao: ClimbDao) {
     val allAttempts: LiveData<List<Attempt>> = climbDao.getAllAttempts()
+    var allClimbs: MutableLiveData<List<Climb>> = MutableLiveData<List<Climb>>(emptyList())
 
     private val db = Firebase.firestore
     private val storage = Firebase.storage
     private val climbCollection = db.collection("climbs")
+    private var filteredClimbCollectionQuery: Query = climbCollection
+
+    // Add a snapshot listener to update the climbs list when a climb is uploaded
+    private var snapshotListener = filteredClimbCollectionQuery.addSnapshotListener { snapshot, e ->
+        if (e != null) {
+            Log.w(TAG, "Listen failed.", e)
+            return@addSnapshotListener
+        }
+
+        // Detect if the upload originates from this device or the server
+        val source = if (snapshot != null && snapshot.metadata.hasPendingWrites()) {
+            "Local"
+        } else {
+            "Server"
+        }
+
+        if (snapshot != null) {
+            Log.d(TAG, "$source data: ${snapshot.toObjects<Climb>()}")
+            allClimbs.value = snapshot.toObjects<Climb>()
+        } else {
+            Log.d(TAG, "$source data: null")
+        }
+    }
 
     // Add a climb to the Firestore climbs collection
     suspend fun insertClimb(climb: Climb) {
@@ -59,39 +85,56 @@ class ClimbRepository(private val climbDao: ClimbDao) {
         return thisClimb.toObject<Climb>()
     }
     // Get the list of uploaded climbs based on a filter, empty filter returns all climbs
-    suspend fun getFilteredClimbs(searchQuery: String): List<Climb> {
-        // Filter only items whose name, grade or tags contain the query string (case-sensitive)
-        val climbCollection = db.collection("climbs")
-        val climbFilterQuery = climbCollection.where(
+    fun filterClimbs(searchQuery: String) {
+        filteredClimbCollectionQuery = db.collection("climbs").where(
             or(
-            and(
-                greaterThanOrEqualTo("name", searchQuery),
-                lessThanOrEqualTo("name", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("grade", searchQuery),
-                lessThanOrEqualTo("grade", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("uploader", searchQuery),
-                lessThanOrEqualTo("uploader", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("style", searchQuery),
-                lessThanOrEqualTo("style", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("holds", searchQuery),
-                lessThanOrEqualTo("holds", searchQuery+"\uf8ff")
-            ),
-            and(
-                greaterThanOrEqualTo("incline", searchQuery),
-                lessThanOrEqualTo("incline", searchQuery+"\uf8ff")
+                and(
+                    greaterThanOrEqualTo("name", searchQuery),
+                    lessThanOrEqualTo("name", searchQuery+"\uf8ff")
+                ),
+                and(
+                    greaterThanOrEqualTo("grade", searchQuery),
+                    lessThanOrEqualTo("grade", searchQuery+"\uf8ff")
+                ),
+                and(
+                    greaterThanOrEqualTo("uploader", searchQuery),
+                    lessThanOrEqualTo("uploader", searchQuery+"\uf8ff")
+                ),
+                and(
+                    greaterThanOrEqualTo("style", searchQuery),
+                    lessThanOrEqualTo("style", searchQuery+"\uf8ff")
+                ),
+                and(
+                    greaterThanOrEqualTo("holds", searchQuery),
+                    lessThanOrEqualTo("holds", searchQuery+"\uf8ff")
+                ),
+                and(
+                    greaterThanOrEqualTo("incline", searchQuery),
+                    lessThanOrEqualTo("incline", searchQuery+"\uf8ff")
+                )
             )
         )
-        )
-        val snapshot = climbFilterQuery.get().await()
-        return snapshot.toObjects<Climb>()
+        // Replace snapshot listener for new query
+        snapshotListener.remove()
+        snapshotListener = filteredClimbCollectionQuery.addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Log.w(TAG, "Listen failed.", e)
+                return@addSnapshotListener
+            }
+
+            val source = if (snapshot != null && snapshot.metadata.hasPendingWrites()) {
+                "Local"
+            } else {
+                "Server"
+            }
+
+            if (snapshot != null) {
+                Log.d(TAG, "$source data: ${snapshot.toObjects<Climb>()}")
+                allClimbs.value = snapshot.toObjects<Climb>()
+            } else {
+                Log.d(TAG, "$source data: null")
+            }
+        }
     }
     suspend fun getClimbImage(climb: Climb): Uri {
         var imageUri = Uri.EMPTY
