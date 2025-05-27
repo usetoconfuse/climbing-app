@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
                         // Your climbs
                         composable(
                             route = AppScreens.Climbs.name,
-                        ) {index ->
+                        ) {
                             AllClimbsScreen(
                                 climbViewModel,
                                 navController
@@ -76,7 +76,6 @@ class MainActivity : ComponentActivity() {
                         composable(
                             route = AppScreens.Upload.name
                         ) {
-                            index ->
                             UploadClimbScreen(
                                 climbViewModel,
                                 navController

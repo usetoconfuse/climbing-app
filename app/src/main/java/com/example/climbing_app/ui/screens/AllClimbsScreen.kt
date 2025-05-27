@@ -1,11 +1,13 @@
 package com.example.climbing_app.ui.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,6 +32,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -107,7 +110,7 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
             )
         }
     ) { innerPadding ->
-        ClimbsList(
+        AllClimbsContent(
             climbViewModel = climbViewModel,
             navController = navController,
             modifier = Modifier.padding(innerPadding)
@@ -116,9 +119,9 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun ClimbsList(
+fun AllClimbsContent(
     climbViewModel: ClimbViewModel,
     navController: NavController,
     modifier: Modifier
@@ -136,63 +139,77 @@ fun ClimbsList(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val searchResults by climbViewModel.getFilteredClimbs(searchQuery).observeAsState()
 
-    Column(
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { isRefreshing = false },
         modifier = modifier
     ) {
-        SearchBar(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            windowInsets = WindowInsets(top = 0.dp),
-            inputField = {
-                SearchBarDefaults.InputField(
-                    query = searchQuery,
-                    onQueryChange = {
-                        searchQuery = it
-                    },
-                    onSearch = { focusManager.clearFocus() },
-                    expanded = false,
-                    onExpandedChange = {},
-                    placeholder = { Text("Name, grade, uploader or tag...") },
-                    leadingIcon = { Icon(Icons.Default.Search, "Search") },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(
-                                onClick = { searchQuery = "" }
-                            ) {
-                                Icon(Icons.Default.Clear, "Clear")
+        LazyColumn(
+            Modifier.fillMaxSize()
+        ) {
+            stickyHeader {
+                SearchBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    windowInsets = WindowInsets(top = 0.dp),
+                    inputField = {
+                        SearchBarDefaults.InputField(
+                            query = searchQuery,
+                            onQueryChange = {
+                                searchQuery = it
+                            },
+                            onSearch = { focusManager.clearFocus() },
+                            expanded = false,
+                            onExpandedChange = {},
+                            placeholder = { Text("Name, grade, uploader or tag...") },
+                            leadingIcon = { Icon(Icons.Default.Search, "Search") },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = { searchQuery = "" }
+                                    ) {
+                                        Icon(Icons.Default.Clear, "Clear")
+                                    }
+                                }
                             }
-                        }
-                    }
-                )
-            },
-            expanded = false,
-            onExpandedChange = {}
-        ) {}
-        // Show 'no climbs' message if no climbs exist / match search
-        if (searchResults == null) {
-            NoClimbsMessage(Modifier)
-        } else {
-            if (searchResults!!.isEmpty()) {
-                NoClimbsMessage(Modifier)
+                        )
+                    },
+                    expanded = false,
+                    onExpandedChange = {}
+                ) {}
             }
-            LazyColumn {
-                items(searchResults!!) {
-                    ClimbsListItem(
-                        onClick = {
-                            focusManager.clearFocus()
-                            navController.navigate(
-                                route = AppScreens.Detail.name+"/${it.climbId}"
-                            )
-                        },
-                        climb = it,
-                        attempts = attemptList.filter({attempt ->
-                            attempt.climbId == it.climbId && attempt.userId == Firebase.auth.currentUser?.uid
-                        }),
-                        placeholder = placeholderPainter,
-                        climbViewModel = climbViewModel
-                    )
-                    HorizontalDivider(thickness = 2.dp)
+            // Show 'no climbs' message if no climbs exist / match search
+            if (searchResults == null) {
+                item {
+                    NoClimbsMessage(Modifier)
+                }
+            } else {
+                if (searchResults!!.isEmpty()) {
+                    item {
+                        NoClimbsMessage(Modifier)
+                    }
+                }
+                else {
+                    items(searchResults!!) {
+                        ClimbsListItem(
+                            onClick = {
+                                focusManager.clearFocus()
+                                navController.navigate(
+                                    route = AppScreens.Detail.name+"/${it.climbId}"
+                                )
+                            },
+                            climb = it,
+                            attempts = attemptList.filter({attempt ->
+                                attempt.climbId == it.climbId && attempt.userId == Firebase.auth.currentUser?.uid
+                            }),
+                            placeholder = placeholderPainter,
+                            climbViewModel = climbViewModel
+                        )
+                        HorizontalDivider(thickness = 2.dp)
+                    }
                 }
             }
         }
