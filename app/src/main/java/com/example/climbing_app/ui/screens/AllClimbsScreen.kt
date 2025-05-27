@@ -63,14 +63,19 @@ import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController) {
-    val auth = Firebase.auth
-    val user = auth.currentUser ?: return
+fun AllClimbsScreen(
+    climbViewModel: ClimbViewModel,
+    navController: NavController,
+    auth: FirebaseAuth
+) {
+    auth.currentUser ?: return // Return if no user
+    val displayName = auth.currentUser!!.displayName
 
     Scaffold(
         topBar = {
@@ -79,7 +84,7 @@ fun AllClimbsScreen(climbViewModel: ClimbViewModel, navController: NavController
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 title = {
-                    Text("${user.displayName} - All Climbs")
+                    Text("$displayName - All Climbs")
                 },
                 navigationIcon = {
                     IconButton(

@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Firebase authentication
+                    // Get Firebase authentication instance and currently signed in user
                     val auth = Firebase.auth
                     val user = auth.currentUser
 
@@ -61,7 +61,10 @@ class MainActivity : ComponentActivity() {
                         composable(
                             route = AppScreens.Login.name
                         ) {
-                            LoginScreen(navController)
+                            LoginScreen(
+                                navController,
+                                auth
+                            )
                         }
                         // Your climbs
                         composable(
@@ -69,7 +72,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             AllClimbsScreen(
                                 climbViewModel,
-                                navController
+                                navController,
+                                auth
                             )
                         }
                         // Upload climb, this is a dialog so it appears over the previous screen
@@ -78,7 +82,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             UploadClimbScreen(
                                 climbViewModel,
-                                navController
+                                navController,
+                                auth
                             )
                         }
                         // Climb details
@@ -94,6 +99,7 @@ class MainActivity : ComponentActivity() {
                             ClimbDetailsScreen(
                                 climbViewModel,
                                 navController,
+                                auth,
                                 climbId = index.arguments?.getString("climb")
                             )
                         }

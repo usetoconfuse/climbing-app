@@ -70,6 +70,7 @@ import com.example.climbing_app.ui.components.CompletionStatusLabel
 import com.example.climbing_app.ui.components.RatingStars
 import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import java.util.Locale
 
@@ -80,10 +81,13 @@ import java.util.Locale
 fun ClimbDetailsScreen(
     climbViewModel: ClimbViewModel,
     navController: NavController,
+    auth: FirebaseAuth,
     climbId: String?
 ) {
-    Firebase.auth.currentUser ?: return
-    if (climbId == null) return
+    auth.currentUser ?: return // Return if no user
+    val displayName = auth.currentUser!!.displayName
+
+    if (climbId == null) return // Return if no climb
     val context = LocalContext.current
 
     var openDialogType by rememberSaveable { mutableStateOf("") }
@@ -161,7 +165,7 @@ fun ClimbDetailsScreen(
 
     Scaffold(
         topBar = {
-            ClimbingMinorTopAppBar(climb?.name ?: "Not Found", navController)
+            ClimbingMinorTopAppBar("$displayName - Viewing " + (climb?.name ?: "unknown"), navController)
         },
         floatingActionButton = { if (climb != null) {
             // Share button with ShareSheet

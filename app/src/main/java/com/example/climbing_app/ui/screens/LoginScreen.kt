@@ -27,13 +27,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.climbing_app.AppScreens
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(
+    navController: NavController,
+    auth: FirebaseAuth
+) {
+    // If a user is logged in, go to all climbs screen
+    if (auth.currentUser != null) {
+        navController.navigate(
+            route = AppScreens.Climbs.name
+        ) {
+            popUpTo(AppScreens.Login.name) {
+                inclusive = true
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -44,18 +57,6 @@ fun LoginScreen(navController: NavController) {
                 .padding(top = 48.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            val auth = Firebase.auth
-            val user = auth.currentUser
-            if (user != null) {
-                navController.navigate(
-                    route = AppScreens.Climbs.name
-                ) {
-                    popUpTo(AppScreens.Login.name) {
-                        inclusive = true
-                    }
-                }
-            }
-
             val context = LocalContext.current
 
             // Login details

@@ -15,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -49,20 +48,20 @@ import com.example.climbing_app.data.ClimbTagType
 import com.example.climbing_app.ui.ClimbViewModel
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.prepareCamera
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.FirebaseAuth
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadClimbScreen(
     climbViewModel: ClimbViewModel,
-    navController: NavController
+    navController: NavController,
+    auth: FirebaseAuth
 ) {
-    Firebase.auth.currentUser ?: return
+    auth.currentUser ?: return // Return if no user
+    val displayName = auth.currentUser!!.displayName
 
     Scaffold(
-        topBar = { ClimbingMinorTopAppBar("New Climb", navController) },
+        topBar = { ClimbingMinorTopAppBar("$displayName - New Climb", navController) },
         modifier = Modifier.fillMaxSize()
     ) {innerPadding ->
         UploadClimbContent(
