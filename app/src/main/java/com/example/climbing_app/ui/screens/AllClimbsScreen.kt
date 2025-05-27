@@ -88,7 +88,7 @@ fun AllClimbsScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 title = {
-                    Text("$displayName - All Climbs")
+                    Text("$displayName - Latest Climbs")
                 },
                 navigationIcon = {
                     IconButton(
@@ -249,6 +249,9 @@ fun ClimbsListItem(
     // Download the image for this climb
     val imageUri by climbViewModel.getClimbImage(climb).observeAsState()
 
+    // Get the upload day without time
+    val uploadDate = climb.formattedUploadDate()
+
     Card(
         onClick = onClick,
         shape = RectangleShape,
@@ -291,12 +294,19 @@ fun ClimbsListItem(
                 Row {
                     Text(
                         text = climb.grade,
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.secondary
                     )
                     RatingStars(
                         rating = climb.rating,
                         modifier = Modifier.padding(start = 6.dp, top = 2.dp)
+                    )
+                    Text(
+                        text = uploadDate,
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(start = 6.dp)
                     )
                     Spacer(modifier = Modifier.weight(1.0f))
                     Text(
