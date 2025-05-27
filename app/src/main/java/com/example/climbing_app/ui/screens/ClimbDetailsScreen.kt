@@ -371,7 +371,9 @@ fun ClimbDetailsMainInfo(
                 fontSize = 14.sp,
                 modifier = Modifier.padding(start = 2.dp)
             )
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 TagListRow(
                     style = climb.style,
                     holds = climb.holds,
@@ -404,7 +406,7 @@ fun ClimbDetailsMainInfo(
                     Icon(Icons.Default.Share, null)
                     Text(
                         text = "SHARE",
-                        modifier = Modifier.padding(start = 6.dp)
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
             }
