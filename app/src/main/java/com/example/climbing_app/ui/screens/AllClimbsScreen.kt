@@ -2,6 +2,7 @@ package com.example.climbing_app.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,10 +34,12 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,6 +68,7 @@ import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,6 +135,7 @@ fun AllClimbsContent(
     navController: NavController,
     modifier: Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
     // Get data from the ViewModel
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
     val searchResults by climbViewModel.allClimbs.observeAsState()
@@ -145,10 +150,19 @@ fun AllClimbsContent(
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val state = rememberPullToRefreshState()
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = { isRefreshing = false },
+        onRefresh = {
+            isRefreshing = true
+            focusManager.clearFocus()
+            searchQuery = ""
+            climbViewModel.filterClimbs(searchQuery)
+            coroutineScope.launch { state.animateToHidden() }
+            isRefreshing = false
+        },
+        state = state,
         modifier = modifier
     ) {
         LazyColumn(
@@ -157,9 +171,10 @@ fun AllClimbsContent(
             stickyHeader {
                 SearchBar(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .background(SearchBarDefaults.colors().containerColor)
+                        .fillMaxWidth(),
                     windowInsets = WindowInsets(top = 0.dp),
+                    shape = RectangleShape,
                     inputField = {
                         SearchBarDefaults.InputField(
                             query = searchQuery,
