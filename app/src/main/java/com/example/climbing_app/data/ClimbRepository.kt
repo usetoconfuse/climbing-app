@@ -26,7 +26,7 @@ class ClimbRepository(private val climbDao: ClimbDao) {
     private val db = Firebase.firestore
     private val storage = Firebase.storage
     private val climbCollection = db.collection("climbs")
-    private var filteredClimbCollectionQuery: Query = climbCollection
+    private var filteredClimbCollectionQuery: Query = climbCollection.orderBy("uploadDate", Query.Direction.DESCENDING)
 
     // Add a snapshot listener to update the climbs list when a climb is uploaded
     private var snapshotListener = filteredClimbCollectionQuery.addSnapshotListener { snapshot, e ->
@@ -113,7 +113,7 @@ class ClimbRepository(private val climbDao: ClimbDao) {
                     lessThanOrEqualTo("incline", searchQuery+"\uf8ff")
                 )
             )
-        )
+        ).orderBy("uploadDate", Query.Direction.DESCENDING)
         // Replace snapshot listener for new query
         snapshotListener.remove()
         snapshotListener = filteredClimbCollectionQuery.addSnapshotListener { snapshot, e ->
