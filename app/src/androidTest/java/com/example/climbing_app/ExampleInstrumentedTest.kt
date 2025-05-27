@@ -33,6 +33,8 @@ class ExampleInstrumentedTest {
 }
  */
 
+// These tests require hard-coded id values from Firebase which cannot be fetched by the app
+// So the content provider would fail in a real use case
 @RunWith(AndroidJUnit4::class)
 class ClimbProviderTest {
 
