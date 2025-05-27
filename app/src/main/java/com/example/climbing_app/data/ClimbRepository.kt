@@ -24,7 +24,7 @@ class ClimbRepository(private val climbDao: ClimbDao) {
     private val storage = Firebase.storage
     private val climbCollection = db.collection("climbs")
 
-    // Firestore climbs collection
+    // Add a climb to the Firestore climbs collection
     suspend fun insertClimb(climb: Climb) {
         if (climb.imageLocation != null) {
             // Upload the image to firebase storage
@@ -53,10 +53,12 @@ class ClimbRepository(private val climbDao: ClimbDao) {
                 Log.w(TAG, "Error adding document", e)
             }
     }
+    // Get a specific climb from the collection by its generated ID
     suspend fun getClimb(climbId: String): Climb? {
         val thisClimb = climbCollection.document(climbId).get().await()
         return thisClimb.toObject<Climb>()
     }
+    // Get the list of uploaded climbs based on a filter, empty filter returns all climbs
     suspend fun getFilteredClimbs(searchQuery: String): List<Climb> {
         // Filter only items whose name, grade or tags contain the query string (case-sensitive)
         val climbCollection = db.collection("climbs")
