@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -40,10 +42,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +77,7 @@ import com.example.climbing_app.ui.components.TagListRow
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 
@@ -93,17 +99,21 @@ fun ClimbDetailsScreen(
     var openDialogType by rememberSaveable { mutableStateOf("") }
 
     // Get data from the ViewModel
+    val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
-    val climb = climbViewModel.getClimb(climbId).observeAsState().value
 
     // Find the data for climb we're viewing
-    val attempts = attemptList.filter{attempt ->
+    val climb = climbList.find { climb ->
+        climb.climbId == climbId
+    }
+    val attempts = attemptList.filter {attempt ->
         attempt.climbId == climbId && attempt.userId == Firebase.auth.currentUser?.uid
     }
 
     // Download the image for this climb
     val imageUri by climbViewModel.getClimbImage(climb ?: Climb()).observeAsState()
 
+    // Helper function for toast message
     val capitalizeFirst: (String) -> String = { str ->
         str.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(
@@ -111,6 +121,11 @@ fun ClimbDetailsScreen(
             ) else it.toString()
         }
     }
+
+    // Variables for refresh
+    val coroutineScope = rememberCoroutineScope()
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val state = rememberPullToRefreshState()
 
     when {
         openDialogType.isNotEmpty() && climb != null -> {
@@ -120,13 +135,15 @@ fun ClimbDetailsScreen(
                 }
             ) {
                 Surface(
-                    modifier = Modifier.wrapContentWidth().wrapContentHeight(),
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight(),
                     shape = MaterialTheme.shapes.large,
                     tonalElevation = AlertDialogDefaults.TonalElevation
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Log $openDialogType for ${climb.name}?",
+                            text = "Log $openDialogType for ${climb!!.name}?",
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Row(
@@ -140,14 +157,14 @@ fun ClimbDetailsScreen(
                             TextButton(
                                 onClick = {
                                     val newAttempt = Attempt(
-                                        climbId = climb.climbId!!,
+                                        climbId = climb!!.climbId!!,
                                         completed = openDialogType == "send"
                                     )
 
                                     climbViewModel.insertAttempt(newAttempt)
                                     Toast.makeText(
                                         context,
-                                        "${capitalizeFirst(openDialogType)} logged for ${climb.name}",
+                                        "${capitalizeFirst(openDialogType)} logged for ${climb!!.name}",
                                         Toast.LENGTH_SHORT
                                     ).show()
 
@@ -179,8 +196,8 @@ fun ClimbDetailsScreen(
                         putExtra(
                             Intent.EXTRA_TEXT,
                             "Check out this climb from Sendtrain!\n" +
-                                    "${climb.name} by ${climb.uploader}" +
-                                    " | ${climb.grade} | ${climb.rating} stars\n" +
+                                    "${climb!!.name} by ${climb!!.uploader}" +
+                                    " | ${climb!!.grade} | ${climb!!.rating} stars\n" +
                                     "I've attempted this climb ${attempts.size} times!"
                         )
                         type = "text/plain"
@@ -237,28 +254,54 @@ fun ClimbDetailsScreen(
         },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                coroutineScope.launch { state.animateToHidden() }
+                isRefreshing = false
+            },
+            state = state,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            ClimbDetailsContent(
+                climb = climb,
+                attempts = attempts,
+                imageUri = imageUri
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun ClimbDetailsContent(
+    climb: Climb?,
+    attempts: List<Attempt>,
+    imageUri: Uri?
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
         // Don't load the page if data wasn't retrieved
         if (climb == null) {
-            ClimbNotFoundMessage(Modifier.padding(innerPadding))
+            item {
+                ClimbNotFoundMessage()
+            }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                item {
-                    // Main screen content
-                    ClimbDetailsContent(
-                        climb = climb,
-                        uploader = climb.uploader,
-                        attempts = attempts,
-                        placeholderPainter = painterResource(R.drawable.img_placeholder),
-                        imageUri = imageUri
-                    )
-                }
-                itemsIndexed(attempts) { index, item ->
-                    AttemptHistoryItem(attempts.size-index, item)
-                }
+            // Main climb info
+            stickyHeader {
+                ClimbDetailsMainInfo(
+                    climb = climb,
+                    attempts = attempts,
+                    placeholderPainter = painterResource(R.drawable.img_placeholder),
+                    imageUri = imageUri
+                )
+            }
+            // List of attempts
+            itemsIndexed(attempts) { index, item ->
+                AttemptHistoryItem(attempts.size-index, item)
             }
         }
     }
@@ -266,9 +309,8 @@ fun ClimbDetailsScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ClimbDetailsContent(
+fun ClimbDetailsMainInfo(
     climb: Climb,
-    uploader: String,
     attempts: List<Attempt>,
     placeholderPainter: Painter,
     imageUri: Uri?
@@ -276,6 +318,7 @@ fun ClimbDetailsContent(
     Column(
         modifier = Modifier
             .padding(top = 16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Climb info
         Column(
@@ -317,7 +360,7 @@ fun ClimbDetailsContent(
                             modifier = Modifier.padding(top = 2.dp, end = 10.dp)
                         )
                         Text(
-                            text = "by $uploader",
+                            text = "by ${climb.uploader}",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -391,10 +434,10 @@ fun AttemptHistoryItem(attemptNum: Int, attempt: Attempt) {
 }
 
 @Composable
-fun ClimbNotFoundMessage(modifier: Modifier) {
+fun ClimbNotFoundMessage() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = Modifier
             .padding(top = 24.dp)
             .fillMaxWidth()
     ) {

@@ -135,7 +135,6 @@ fun AllClimbsContent(
     navController: NavController,
     modifier: Modifier
 ) {
-    val coroutineScope = rememberCoroutineScope()
     // Get data from the ViewModel
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
     val searchResults by climbViewModel.allClimbs.observeAsState()
@@ -149,6 +148,8 @@ fun AllClimbsContent(
     // User input into search bar
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
+    // Variables for refresh
+    val coroutineScope = rememberCoroutineScope()
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
 
@@ -205,12 +206,12 @@ fun AllClimbsContent(
             // Show 'no climbs' message if no climbs exist / match search
             if (searchResults == null) {
                 item {
-                    NoClimbsMessage(Modifier)
+                    NoClimbsMessage()
                 }
             } else {
                 if (searchResults!!.isEmpty()) {
                     item {
-                        NoClimbsMessage(Modifier)
+                        NoClimbsMessage()
                     }
                 }
                 else {
@@ -319,10 +320,10 @@ fun ClimbsListItem(
 }
 
 @Composable
-fun NoClimbsMessage(modifier: Modifier) {
+fun NoClimbsMessage() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = Modifier
             .padding(top = 24.dp)
             .fillMaxWidth()
     ) {
