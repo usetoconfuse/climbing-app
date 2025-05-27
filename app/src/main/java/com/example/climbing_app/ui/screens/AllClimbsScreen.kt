@@ -286,7 +286,7 @@ fun ClimbsListItem(
                         text = "by ${climb.uploader}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(start = 10.dp)
+                        modifier = Modifier.padding(start = 6.dp)
                     )
                     Spacer(Modifier.weight(1.0f))
                     CompletionStatusIcon((attempts.find{attempt -> attempt.completed}) != null)
