@@ -153,7 +153,7 @@ fun ClimbsList(
                     onSearch = { focusManager.clearFocus() },
                     expanded = false,
                     onExpandedChange = {},
-                    placeholder = { Text("Name, grade or tag...") },
+                    placeholder = { Text("Name, grade, uploader or tag...") },
                     leadingIcon = { Icon(Icons.Default.Search, "Search") },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {

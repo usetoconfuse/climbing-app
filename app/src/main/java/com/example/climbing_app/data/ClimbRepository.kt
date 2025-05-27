@@ -71,6 +71,10 @@ class ClimbRepository(private val climbDao: ClimbDao) {
                 lessThanOrEqualTo("grade", searchQuery+"\uf8ff")
             ),
             and(
+                greaterThanOrEqualTo("uploader", searchQuery),
+                lessThanOrEqualTo("uploader", searchQuery+"\uf8ff")
+            ),
+            and(
                 greaterThanOrEqualTo("style", searchQuery),
                 lessThanOrEqualTo("style", searchQuery+"\uf8ff")
             ),
