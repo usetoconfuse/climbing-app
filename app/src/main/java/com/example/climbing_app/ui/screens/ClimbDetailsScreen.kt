@@ -1,12 +1,12 @@
 package com.example.climbing_app.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -34,7 +34,6 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -185,30 +184,6 @@ fun ClimbDetailsScreen(
         topBar = {
             ClimbingMinorTopAppBar("$displayName - Viewing " + (climb?.name ?: "unknown"), navController)
         },
-        floatingActionButton = { if (climb != null) {
-            // Share button with ShareSheet
-            ExtendedFloatingActionButton(
-                text = { Text("SHARE") },
-                icon = { Icon(Icons.Default.Share, null) },
-                onClick = {
-                    val sendIntent: Intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TITLE, "Share climb via")
-                        putExtra(
-                            Intent.EXTRA_TEXT,
-                            "Check out this climb from Sendtrain!\n" +
-                                    "${climb.name} by ${climb.uploader}" +
-                                    " | ${climb.grade} | ${climb.rating} stars\n" +
-                                    "I've attempted this climb ${attempts.size} times!"
-                        )
-                        type = "text/plain"
-                    }
-
-                    val shareIntent = Intent.createChooser(sendIntent, "Share climb via")
-                    context.startActivity(shareIntent)
-                }
-            )
-        }},
         bottomBar = {
             // Bottom log buttons
             BottomAppBar {
@@ -266,6 +241,7 @@ fun ClimbDetailsScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             ClimbDetailsContent(
+                context = context,
                 climb = climb,
                 attempts = attempts,
                 imageUri = imageUri
@@ -277,13 +253,13 @@ fun ClimbDetailsScreen(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ClimbDetailsContent(
+    context: Context,
     climb: Climb?,
     attempts: List<Attempt>,
     imageUri: Uri?
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier.fillMaxSize()
     ) {
         // Don't load the page if data wasn't retrieved
         if (climb == null) {
@@ -292,8 +268,9 @@ fun ClimbDetailsContent(
             }
         } else {
             // Main climb info
-            stickyHeader {
+            item {
                 ClimbDetailsMainInfo(
+                    context = context,
                     climb = climb,
                     attempts = attempts,
                     placeholderPainter = painterResource(R.drawable.img_placeholder),
@@ -311,6 +288,7 @@ fun ClimbDetailsContent(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ClimbDetailsMainInfo(
+    context: Context,
     climb: Climb,
     attempts: List<Attempt>,
     placeholderPainter: Painter,
@@ -393,14 +371,43 @@ fun ClimbDetailsMainInfo(
                 fontSize = 14.sp,
                 modifier = Modifier.padding(start = 2.dp)
             )
-            TagListRow(
-                style = climb.style,
-                holds = climb.holds,
-                incline = climb.incline,
-                modifier = Modifier
-                    .width(250.dp)
-                    .padding(top = 10.dp)
-            )
+            Row {
+                TagListRow(
+                    style = climb.style,
+                    holds = climb.holds,
+                    incline = climb.incline,
+                    modifier = Modifier
+                        .width(220.dp)
+                        .padding(top = 10.dp)
+                )
+                Spacer(Modifier.weight(1.0f))
+                // Share button with ShareSheet
+                TextButton(
+                    onClick = {
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TITLE, "Share climb via")
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                "Check out this climb from Sendtrain!\n" +
+                                        "${climb.name} by ${climb.uploader}" +
+                                        " | ${climb.grade} | ${climb.rating} stars\n" +
+                                        "I've attempted this climb ${attempts.size} times!"
+                            )
+                            type = "text/plain"
+                        }
+
+                        val shareIntent = Intent.createChooser(sendIntent, "Share climb via")
+                        context.startActivity(shareIntent)
+                    }
+                ) {
+                    Icon(Icons.Default.Share, null)
+                    Text(
+                        text = "SHARE",
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
+            }
         }
         HorizontalDivider(
             thickness = 2.dp,
