@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -26,6 +27,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialogDefaults
@@ -53,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -186,45 +189,43 @@ fun ClimbDetailsScreen(
         },
         bottomBar = {
             // Bottom log buttons
-            BottomAppBar {
+            BottomAppBar(
+                contentPadding = PaddingValues(0.dp)
+            ) {
                 Button(
                     onClick = { openDialogType = "attempt" },
+                    shape = RectangleShape,
                     modifier = Modifier
                         .weight(1.0f)
                         .fillMaxSize()
-                        .padding(vertical = 8.dp, horizontal = 1.dp)
                 ) {
-                    Row {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = null
-                        )
-                        Text(
-                            text = "LOG ATTEMPT",
-                            modifier = Modifier.padding(top = 2.dp, start = 6.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = null
+                    )
+                    Text(
+                        text = "LOG ATTEMPT",
+                        modifier = Modifier.padding(top = 2.dp, start = 6.dp)
+                    )
                 }
                 Button(
                     onClick = { openDialogType = "send" },
+                    shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78A55A)),
                     modifier = Modifier
                         .weight(1.0f)
                         .fillMaxSize()
-                        .padding(vertical = 8.dp, horizontal = 1.dp)
                 ) {
-                    Row {
-                        Icon(
-                            imageVector = Icons.Filled.CheckCircle,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                        Text(
-                            text = "LOG SEND",
-                            color = Color.White,
-                            modifier = Modifier.padding(top = 2.dp, start = 6.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                    Text(
+                        text = "LOG SEND",
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 2.dp, start = 6.dp)
+                    )
                 }
             }
         },

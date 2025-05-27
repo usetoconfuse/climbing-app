@@ -123,7 +123,8 @@ fun AllClimbsScreen(
                 onClick = { navController.navigate(route = AppScreens.Upload.name) },
                 modifier = Modifier
                     .windowInsetsPadding(
-                        WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal))
+                        WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+                    )
             )
         }
     ) { innerPadding ->
