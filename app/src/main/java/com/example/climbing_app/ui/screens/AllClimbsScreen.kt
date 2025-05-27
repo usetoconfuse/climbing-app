@@ -173,6 +173,9 @@ fun ClimbsList(
         if (searchResults == null) {
             NoClimbsMessage(Modifier)
         } else {
+            if (searchResults!!.isEmpty()) {
+                NoClimbsMessage(Modifier)
+            }
             LazyColumn {
                 items(searchResults!!) {
                     ClimbsListItem(
