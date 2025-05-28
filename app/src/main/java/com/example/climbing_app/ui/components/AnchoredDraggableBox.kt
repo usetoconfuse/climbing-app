@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 
+// A box implementing swipe-to-delete functionality
+// Primary content is swiped to reveal secondary content (delete icon)
+// Secondary content cover is provided to hide "offscreen" secondary content
+// Which is not properly hidden behind the device navbar when using edge-to-edge UI
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AnchoredDraggableBox(

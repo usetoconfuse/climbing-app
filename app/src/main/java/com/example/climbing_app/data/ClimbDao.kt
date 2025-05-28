@@ -23,7 +23,7 @@ interface ClimbDao {
     @Query("SELECT * FROM attempts ORDER BY date DESC")
     fun getAllAttempts(): LiveData<List<Attempt>>
 
-    //for the use of ContentProvider
+    // For the use of ContentProvider
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAttemptItem(attempt: Attempt):Long
     @Delete
