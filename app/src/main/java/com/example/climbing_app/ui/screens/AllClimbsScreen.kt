@@ -41,6 +41,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -162,13 +163,17 @@ fun AllClimbsContent(
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
 
+    // Update the list of climbs whenever the search query changes
+    LaunchedEffect(searchQuery) {
+        climbViewModel.filterClimbs(searchQuery)
+    }
+
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
             focusManager.clearFocus()
             searchQuery = ""
-            climbViewModel.filterClimbs(searchQuery)
             coroutineScope.launch { state.animateToHidden() }
             isRefreshing = false
         },
@@ -188,10 +193,7 @@ fun AllClimbsContent(
                     inputField = {
                         SearchBarDefaults.InputField(
                             query = searchQuery,
-                            onQueryChange = {
-                                searchQuery = it
-                                climbViewModel.filterClimbs(searchQuery)
-                            },
+                            onQueryChange = { searchQuery = it },
                             onSearch = { focusManager.clearFocus() },
                             expanded = false,
                             onExpandedChange = {},
