@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -274,7 +275,7 @@ fun ClimbDetailsContent(
             // List of attempts
             itemsIndexed(attempts) { index, item ->
                 AttemptHistoryItem(attempts.size-index, item, onDelete)
-                HorizontalDivider(thickness = 2.dp)
+                HorizontalDivider(thickness = 1.dp)
             }
         }
     }
@@ -410,11 +411,28 @@ fun ClimbDetailsMainInfo(
             thickness = 2.dp,
             modifier = Modifier.padding(top = 8.dp)
         )
-        Text(
-            text = "History",
-            color = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp)
-        )
+        Row(
+            modifier = Modifier.padding(top = 8.dp, start = 18.dp, end = 18.dp)
+        ) {
+            Text(
+                text = "History",
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Spacer(Modifier.weight(1.0f))
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                tint = MaterialTheme.colorScheme.tertiary,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(top = 5.dp, end = 4.dp)
+                    .size(14.dp)
+            )
+            Text(
+                text = "Swipe to delete",
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+        }
     }
 }
 
