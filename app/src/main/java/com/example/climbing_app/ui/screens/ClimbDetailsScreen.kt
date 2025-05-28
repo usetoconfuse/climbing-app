@@ -274,7 +274,10 @@ fun ClimbDetailsContent(
             }
             // List of attempts
             itemsIndexed(attempts) { index, item ->
+                HorizontalDivider(thickness = 1.dp)
                 AttemptHistoryItem(attempts.size-index, item, onDelete)
+            }
+            item {
                 HorizontalDivider(thickness = 1.dp)
             }
         }
@@ -412,7 +415,7 @@ fun ClimbDetailsMainInfo(
             modifier = Modifier.padding(top = 8.dp)
         )
         Row(
-            modifier = Modifier.padding(top = 8.dp, start = 18.dp, end = 18.dp)
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
         ) {
             Text(
                 text = "History",
