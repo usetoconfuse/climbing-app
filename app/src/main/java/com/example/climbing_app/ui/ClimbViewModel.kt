@@ -32,7 +32,7 @@ class ClimbViewModel(application: Application) : AndroidViewModel(application) {
     fun filterClimbs(searchQuery: String) = viewModelScope.launch {
         repository.filterClimbs(searchQuery)
     }
-    fun getClimbImage(climb: Climb): MutableLiveData<Uri> {
+    fun getClimbImage(climb: Climb?): LiveData<Uri> {
         val result = MutableLiveData<Uri>()
         viewModelScope.launch {
             result.postValue(repository.getClimbImage(climb))

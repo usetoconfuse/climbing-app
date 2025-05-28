@@ -38,6 +38,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -46,9 +47,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -71,6 +75,7 @@ import com.example.climbing_app.R
 import com.example.climbing_app.data.Attempt
 import com.example.climbing_app.data.Climb
 import com.example.climbing_app.ui.ClimbViewModel
+import com.example.climbing_app.ui.components.AnchoredDraggableBox
 import com.example.climbing_app.ui.components.ClimbingMinorTopAppBar
 import com.example.climbing_app.ui.components.CompletionStatusIcon
 import com.example.climbing_app.ui.components.CompletionStatusLabel
@@ -96,90 +101,66 @@ fun ClimbDetailsScreen(
     val displayName = auth.currentUser!!.displayName
 
     if (climbId == null) return // Return if no climb
-    val context = LocalContext.current
 
-    var openDialogType by rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Dialog state variables
+    // Type of dialog currently showing
+    var openDialogType by remember { mutableStateOf("") }
+    // Attempt to delete if deleting an attempt
+    var attemptIdToDelete by remember { mutableIntStateOf(-1) }
 
     // Get data from the ViewModel
     val climbList by climbViewModel.allClimbs.observeAsState(initial = emptyList())
     val attemptList by climbViewModel.allAttempts.observeAsState(initial = emptyList())
 
     // Find the data for climb we're viewing
-    val climb = climbList.find { climb ->
-        climb.climbId == climbId
-    }
-    val attempts = attemptList.filter {attempt ->
-        attempt.climbId == climbId && attempt.userId == Firebase.auth.currentUser?.uid
-    }
-
-    // Download the image for this climb
-    val imageUri by climbViewModel.getClimbImage(climb ?: Climb()).observeAsState()
-
-    // Helper function for toast message
-    val capitalizeFirst: (String) -> String = { str ->
-        str.replaceFirstChar {
-            if (it.isLowerCase()) it.titlecase(
-                Locale.getDefault()
-            ) else it.toString()
+    val climb by remember {
+        derivedStateOf {
+            climbList.find { climb ->
+                climb.climbId == climbId
+            }
         }
     }
 
+    val attempts by remember {
+        derivedStateOf {
+            attemptList.filter { attempt ->
+                attempt.climbId == climbId && attempt.userId == Firebase.auth.currentUser?.uid
+            }
+        }
+    }
+
+    // Download the image for this climb
+    val imageUri by climbViewModel.getClimbImage(climb).observeAsState()
+
     // Variables for refresh
-    val coroutineScope = rememberCoroutineScope()
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
 
-    // Dialogs for logging attempt confirmation
-    when {
-        openDialogType.isNotEmpty() && climb != null -> {
-            BasicAlertDialog(
-                onDismissRequest = {
-                    openDialogType = ""
-                }
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight(),
-                    shape = MaterialTheme.shapes.large,
-                    tonalElevation = AlertDialogDefaults.TonalElevation
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Log $openDialogType for ${climb.name}?",
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Row(
-                            modifier = Modifier.align(Alignment.End)
-                        ) {
-                            TextButton(
-                                onClick = { openDialogType = "" }
-                            ) {
-                                Text("Cancel")
-                            }
-                            TextButton(
-                                onClick = {
-                                    val newAttempt = Attempt(
-                                        climbId = climb.climbId!!,
-                                        completed = openDialogType == "send"
-                                    )
+    // Delete attempt function, callback for swipe-to-delete rows
+    fun showDeleteAttemptDialog(attempt: Attempt) {
+        attemptIdToDelete = attempt.attemptId
+        openDialogType = "delete"
+    }
 
-                                    climbViewModel.insertAttempt(newAttempt)
-                                    Toast.makeText(
-                                        context,
-                                        "${capitalizeFirst(openDialogType)} logged for ${climb.name}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+    // Callback functions for the confirmation dialog
+    fun logAttempt() {
+        val newAttempt = Attempt(
+            climbId = climb!!.climbId!!,
+            completed = openDialogType == "send"
+        )
 
-                                    openDialogType = ""
-                                },
-                            ) {
-                                Text("Confirm")
-                            }
-                        }
-                    }
-                }
-            }
+        climbViewModel.insertAttempt(newAttempt)
+    }
+
+    fun deleteAttempt() {
+        val attempt = attempts.find {attempt -> attempt.attemptId == attemptIdToDelete}
+
+        // Ensure we have an attempt to delete
+        if (attempt != null) {
+            climbViewModel.deleteAttempt(attempt)
         }
     }
 
@@ -241,10 +222,21 @@ fun ClimbDetailsScreen(
             state = state,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // Dialogs for logging and deleting attempt confirmation
+            ClimbDetailsDialog(
+                openDialogType = openDialogType,
+                climbName = climb?.name,
+                onSuccess = if (openDialogType == "delete") ::deleteAttempt else ::logAttempt,
+                onClear = {
+                    openDialogType = ""
+                    attemptIdToDelete = -1
+                }
+            )
             ClimbDetailsContent(
                 context = context,
                 climb = climb,
                 attempts = attempts,
+                onDelete = ::showDeleteAttemptDialog,
                 imageUri = imageUri
             )
         }
@@ -257,6 +249,7 @@ fun ClimbDetailsContent(
     context: Context,
     climb: Climb?,
     attempts: List<Attempt>,
+    onDelete: (Attempt) -> Unit,
     imageUri: Uri?
 ) {
     LazyColumn(
@@ -280,7 +273,8 @@ fun ClimbDetailsContent(
             }
             // List of attempts
             itemsIndexed(attempts) { index, item ->
-                AttemptHistoryItem(attempts.size-index, item)
+                AttemptHistoryItem(attempts.size-index, item, onDelete)
+                HorizontalDivider(thickness = 2.dp)
             }
         }
     }
@@ -425,23 +419,130 @@ fun ClimbDetailsMainInfo(
 }
 
 @Composable
-fun AttemptHistoryItem(attemptNum: Int, attempt: Attempt) {
-    Row(
-        Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
-    ) {
-        CompletionStatusIcon(attempt.completed)
-        Text(
-            text = "Attempt $attemptNum",
-            modifier = Modifier.padding(start = 10.dp)
-        )
-        Spacer(Modifier.weight(1.0f))
-        Text(
-            text = "${attempt.formattedUploadTime()}    ${attempt.formattedUploadDate()}",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.secondary
-        )
+fun AttemptHistoryItem(attemptNum: Int, attempt: Attempt, onDelete: (Attempt) -> Unit) {
+    AnchoredDraggableBox(
+        modifier = Modifier.fillMaxWidth(),
+        firstContent = { modifier ->
+            Row(
+                modifier = modifier
+                    .padding(horizontal = 16.dp)
+            ) {
+                CompletionStatusIcon(attempt.completed)
+                Text(
+                    text = "Attempt $attemptNum",
+                    modifier = Modifier.padding(start = 10.dp)
+                )
+                Spacer(Modifier.weight(1.0f))
+                Text(
+                    text = "${attempt.formattedUploadTime()}    ${attempt.formattedUploadDate()}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+        },
+        secondContent = { modifier ->
+            IconButton(
+                onClick = {},
+                modifier = modifier
+                    .width(50.dp)
+                    .background(Color(0xFFF44336))
+            ) {
+                Icon(Icons.Default.Delete, "Delete")
+            }
+        },
+        secondContentCover = { modifier ->
+            IconButton(
+                onClick = {},
+                modifier = modifier
+                    .width(50.dp)
+                    .background(MaterialTheme.colorScheme.background)
+            ) {}
+        },
+        offsetSize = 50.dp,
+        onDragComplete = { onDelete(attempt) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ClimbDetailsDialog(
+    openDialogType: String,
+    climbName: String?,
+    onSuccess: () -> Unit,
+    onClear: () -> Unit
+) {
+    if (openDialogType.isEmpty() || climbName == null) return
+
+    // Helper function for toast message
+    val capitalizeFirst: (String) -> String = { str ->
+        str.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(
+                Locale.getDefault()
+            ) else it.toString()
+        }
     }
-    HorizontalDivider(thickness = 2.dp)
+
+    val context = LocalContext.current
+
+    val dialogText: String
+    val toastText: String
+    val confirmText: String
+    val confirmTextColor: Color
+
+    if (openDialogType == "delete") {
+        dialogText = "Delete attempt for $climbName?"
+        toastText = "Attempt deleted for $climbName"
+        confirmText = "DELETE"
+        confirmTextColor = Color(0xFFF44336)
+    } else {
+        dialogText = "Log $openDialogType for $climbName?"
+        toastText = "${capitalizeFirst(openDialogType)} logged for $climbName"
+        confirmText = if (openDialogType == "send") "SEND IT" else "LOG ATTEMPT"
+        confirmTextColor = if (openDialogType == "send") Color(0xFF78A55A) else Color.Unspecified
+    }
+
+    BasicAlertDialog(
+        onDismissRequest = { onClear() }
+    ) {
+        Surface(
+            modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = AlertDialogDefaults.TonalElevation
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = dialogText,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    TextButton(
+                        onClick = { onClear() }
+                    ) {
+                        Text("CANCEL")
+                    }
+                    TextButton(
+                        onClick = {
+                            onSuccess()
+
+                            Toast.makeText(
+                                context,
+                                toastText,
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            onClear()
+                        },
+                    ) {
+                        Text(text = confirmText, color = confirmTextColor)
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

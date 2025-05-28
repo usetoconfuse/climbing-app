@@ -13,7 +13,6 @@ import com.google.firebase.firestore.Filter.lessThanOrEqualTo
 import com.google.firebase.firestore.Filter.or
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.tasks.await
@@ -79,11 +78,6 @@ class ClimbRepository(private val climbDao: ClimbDao) {
                 Log.w(TAG, "Error adding document", e)
             }
     }
-    // Get a specific climb from the collection by its generated ID
-    suspend fun getClimb(climbId: String): Climb? {
-        val thisClimb = climbCollection.document(climbId).get().await()
-        return thisClimb.toObject<Climb>()
-    }
     // Get the list of uploaded climbs based on a filter, empty filter returns all climbs
     fun filterClimbs(searchQuery: String) {
         filteredClimbCollectionQuery = db.collection("climbs").where(
@@ -136,24 +130,23 @@ class ClimbRepository(private val climbDao: ClimbDao) {
             }
         }
     }
-    suspend fun getClimbImage(climb: Climb): Uri {
-        var imageUri = Uri.EMPTY
-        if (climb.imageLocation != null) {
-            // Download the image
-            val storageRef = Firebase.storage.reference
-            val imageRef = storageRef.child(climb.imageLocation!!)
-            imageRef.downloadUrl
-                .addOnSuccessListener {
-                    Log.d(TAG, "Successfully got image url $it")
-                    imageUri = it
-                }
-                .addOnFailureListener {
-                    Log.w(TAG, "Failed to get image url: ${it.message ?: it.toString()}")
-                }.await()
-        } else {
-            // Default image if none uploaded
-            imageUri = "android.resource://com.example.climbing_app/drawable/img_placeholder".toUri()
-        }
+    suspend fun getClimbImage(climb: Climb?): Uri {
+        // Return default image if climb is null or climb has no uploaded image
+        var imageUri = "android.resource://com.example.climbing_app/drawable/img_placeholder".toUri()
+        climb?.imageLocation ?: return imageUri
+
+        // Download the image
+        val storageRef = Firebase.storage.reference
+        val imageRef = storageRef.child(climb.imageLocation!!)
+        imageRef.downloadUrl
+            .addOnSuccessListener {
+                Log.d(TAG, "Successfully got image url $it")
+                imageUri = it
+            }
+            .addOnFailureListener {
+                Log.w(TAG, "Failed to get image url: ${it.message ?: it.toString()}")
+            }.await()
+
         return imageUri
     }
 
